@@ -22,7 +22,7 @@
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true,
     "lib": ["ES2023"],
-    "rootDir": "src",
+    "rootDir": "./",
     "strict": true,
     "esModuleInterop": true,
     "moduleResolution": "node",
