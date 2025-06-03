@@ -1,0 +1,29 @@
+{
+  "name": "cleared_back",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ange230700/cleared_back.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ange230700/cleared_back/issues"
+  },
+  "homepage": "https://github.com/Ange230700/cleared_back#readme",
+  "devDependencies": {
+    "@eslint/css": "^0.8.1",
+    "@eslint/js": "^9.28.0",
+    "@eslint/json": "^0.12.0",
+    "@eslint/markdown": "^6.4.0",
+    "eslint": "^9.28.0",
+    "globals": "^16.2.0",
+    "typescript-eslint": "^8.33.1"
+  }
+}
