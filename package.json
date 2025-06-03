@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "cleared_back",
   "version": "1.0.0",
   "description": "",
@@ -20,6 +21,8 @@
   },
   "homepage": "https://github.com/Ange230700/cleared_back#readme",
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
     "@eslint/css": "^0.8.1",
     "@eslint/js": "^9.28.0",
     "@eslint/json": "^0.12.0",
@@ -31,9 +34,14 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.1.0",
     "prettier": "^3.5.3",
-    "typescript-eslint": "^8.33.1"
+    "typescript-eslint": "^8.33.1",
+    "validate-branch-name": "^1.3.2"
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
+  },
+  "validate-branch-name": {
+    "pattern": "^(master|main|develop){1}$|^(feature|fix|hotfix|release)\/.+$",
+    "errorMsg": "Branch name must be master, main, develop, feature/xxx, fix/xxx, hotfix/xxx or release/xxx"
   }
 }
