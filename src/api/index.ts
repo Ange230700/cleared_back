@@ -15,6 +15,10 @@ app.get("/collections", (req, res) =>
   collectionController.getAllCollections(req, res),
 );
 
+app.get("/collections/:id", (req, res) =>
+  collectionController.getCollectionById(req, res),
+);
+
 const PORT = process.env.PORT ?? 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server is running on port ${PORT}`);
