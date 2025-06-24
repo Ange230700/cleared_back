@@ -4,18 +4,17 @@ import prisma from "~/prisma/lib/client";
 import seedVolunteers from "~/prisma/volunteer/seed";
 import seedCollections from "~/prisma/collection/seed";
 import seedGarbage from "~/prisma/garbage/seed";
+import seedVolunteerCollection from "~/prisma/volunteer_collection/seed";
 
 async function main() {
   console.log("🌱 Seeding...");
 
-  // Seed volunteers
-  await seedVolunteers();
+  const skipCleanup = process.env.SKIP_CLEANUP === "true";
 
-  // Seed collections
-  await seedCollections();
-
-  // Seed garbage entries for each collection
-  await seedGarbage();
+  await seedVolunteers(skipCleanup);
+  await seedCollections(skipCleanup);
+  await seedGarbage(skipCleanup);
+  await seedVolunteerCollection(skipCleanup);
 
   console.log("🌱 Seeding complete.");
 }

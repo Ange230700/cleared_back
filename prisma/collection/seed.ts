@@ -6,9 +6,7 @@ import cleanUp from "~/prisma/helpers/cleanUp";
 
 export const NUM_COLLECTIONS = 10;
 
-async function seedCollections() {
-  const skipCleanup = process.env.SKIP_CLEANUP === "true";
-
+async function seedCollections(skipCleanup = false) {
   if (!skipCleanup) {
     console.log("🧹 Cleaning up…");
     await cleanUp();

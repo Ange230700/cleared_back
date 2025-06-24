@@ -7,9 +7,7 @@ import { volunteer_role } from "@prisma/client";
 
 export const NUM_VOLUNTEERS = 10;
 
-async function seedVolunteers() {
-  const skipCleanup = process.env.SKIP_CLEANUP === "true";
-
+async function seedVolunteers(skipCleanup = false) {
   if (!skipCleanup) {
     console.log("🧹 Cleaning up…");
     await cleanUp();

@@ -7,9 +7,7 @@ import { NUM_COLLECTIONS } from "~/prisma/collection/seed";
 
 export const NUM_GARBAGE = 10;
 
-async function seedGarbage() {
-  const skipCleanup = process.env.SKIP_CLEANUP === "true";
-
+async function seedGarbage(skipCleanup = false) {
   if (!skipCleanup) {
     console.log("🧹 Cleaning up…");
     await cleanUp();
