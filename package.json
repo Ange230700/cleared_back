@@ -10,7 +10,7 @@
     "prebuild": "npm run prisma:generate",
     "build": "tsc",
     "postbuild": "npm run prisma:migrate:deploy && npm run prisma:db:seed",
-    "dev": "tsx src/index.ts",
+    "dev": "tsx src/api/index.ts",
     "start": "node dist/index.js",
     "prepare": "husky",
     "lint": "eslint --cache --fix --ext .js,.mjs,.cjs,.ts,.mts,.cts,.json,.jsonc,.json5,.md,.css .",
