@@ -17,9 +17,9 @@ export class CollectionRepository implements ICollectionRepository {
     );
   }
 
-  async getCollectionById(id: number): Promise<Collection | null> {
+  async getCollectionById(collection_id: number): Promise<Collection | null> {
     const collection = await prisma.collection.findUnique({
-      where: { collection_id: BigInt(id) },
+      where: { collection_id: BigInt(collection_id) },
     });
     if (!collection) return null;
     return new Collection(
@@ -27,5 +27,58 @@ export class CollectionRepository implements ICollectionRepository {
       collection.collection_date,
       collection.collection_place,
     );
+  }
+
+  async createCollection(data: {
+    collection_date: Date;
+    collection_place: string;
+  }): Promise<Collection> {
+    const created = await prisma.collection.create({
+      data: {
+        collection_date: data.collection_date,
+        collection_place: data.collection_place,
+      },
+    });
+    return new Collection(
+      Number(created.collection_id),
+      created.collection_date,
+      created.collection_place,
+    );
+  }
+
+  async updateCollection(
+    collection_id: number,
+    data: { collection_date?: Date; collection_place?: string },
+  ): Promise<Collection | null> {
+    const updated = await prisma.collection
+      .update({
+        where: { collection_id: BigInt(collection_id) },
+        data: {
+          ...(data.collection_date && {
+            collection_date: data.collection_date,
+          }),
+          ...(data.collection_place && {
+            collection_place: data.collection_place,
+          }),
+        },
+      })
+      .catch(() => null);
+    if (!updated) return null;
+    return new Collection(
+      Number(updated.collection_id),
+      updated.collection_date,
+      updated.collection_place,
+    );
+  }
+
+  async deleteCollection(collection_id: number): Promise<boolean> {
+    try {
+      await prisma.collection.delete({
+        where: { collection_id: BigInt(collection_id) },
+      });
+      return true;
+    } catch {
+      return false;
+    }
   }
 }

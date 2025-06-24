@@ -15,8 +15,20 @@ app.get("/collections", (req, res) =>
   collectionController.getAllCollections(req, res),
 );
 
-app.get("/collections/:id", (req, res) =>
+app.get("/collections/:collection_id", (req, res) =>
   collectionController.getCollectionById(req, res),
+);
+
+app.post("/collections", (req, res) =>
+  collectionController.createCollection(req, res),
+);
+
+app.put("/collections/:collection_id", (req, res) =>
+  collectionController.updateCollection(req, res),
+);
+
+app.delete("/collections/:collection_id", (req, res) =>
+  collectionController.deleteCollection(req, res),
 );
 
 const PORT = process.env.PORT ?? 3000;

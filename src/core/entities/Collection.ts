@@ -2,8 +2,8 @@
 
 export class Collection {
   constructor(
-    public id: number,
-    public date: Date,
-    public place: string,
+    public collection_id: number,
+    public collection_date: Date,
+    public collection_place: string,
   ) {}
 }
