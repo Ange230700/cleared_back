@@ -13,6 +13,7 @@ CREATE TABLE `Collection`(
     `collection_place` VARCHAR(255) NOT NULL
 );
 CREATE TABLE `Volunteer_Collection`(
+    `volunteer_collection_id` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `volunteer_id` BIGINT NULL,
     `collection_id` BIGINT NULL
 );
@@ -23,8 +24,8 @@ CREATE TABLE `Garbage`(
     `quantity_kg` FLOAT(53) NOT NULL
 );
 ALTER TABLE
-    `Volunteer_Collection` ADD CONSTRAINT `volunteer_collection_volunteer_id_foreign` FOREIGN KEY(`volunteer_id`) REFERENCES `Volunteer`(`volunteer_id`);
-ALTER TABLE
     `Garbage` ADD CONSTRAINT `garbage_collection_id_foreign` FOREIGN KEY(`collection_id`) REFERENCES `Collection`(`collection_id`);
 ALTER TABLE
     `Volunteer_Collection` ADD CONSTRAINT `volunteer_collection_collection_id_foreign` FOREIGN KEY(`collection_id`) REFERENCES `Collection`(`collection_id`);
+ALTER TABLE
+    `Volunteer_Collection` ADD CONSTRAINT `volunteer_collection_volunteer_id_foreign` FOREIGN KEY(`volunteer_id`) REFERENCES `Volunteer`(`volunteer_id`);
