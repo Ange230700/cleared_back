@@ -99,7 +99,7 @@
     "errorMsg": "Branch name must be master, main, develop, feature/xxx, fix/xxx, hotfix/xxx or release/xxx"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/main.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.10.1",
