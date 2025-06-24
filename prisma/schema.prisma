@@ -14,7 +14,7 @@ model collection {
   collection_date      DateTime               @db.Date
   collection_place     String                 @db.VarChar(255)
   garbage              garbage[]
-  volunteer_collection volunteer_collection[] @ignore
+  volunteer_collection volunteer_collection[]
 }
 
 model garbage {
@@ -33,19 +33,18 @@ model volunteer {
   volunteer_email      String                 @db.VarChar(255)
   password             String                 @db.Text
   role                 volunteer_role         @default(attendee)
-  volunteer_collection volunteer_collection[] @ignore
+  volunteer_collection volunteer_collection[]
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model volunteer_collection {
-  volunteer_id  BigInt?
-  collection_id BigInt?
-  collection    collection? @relation(fields: [collection_id], references: [collection_id], onDelete: Restrict, onUpdate: Restrict, map: "volunteer_collection_collection_id_foreign")
-  volunteer     volunteer?  @relation(fields: [volunteer_id], references: [volunteer_id], onDelete: Restrict, onUpdate: Restrict, map: "volunteer_collection_volunteer_id_foreign")
+  volunteer_collection_id BigInt      @id @default(autoincrement())
+  volunteer_id            BigInt?
+  collection_id           BigInt?
+  collection              collection? @relation(fields: [collection_id], references: [collection_id], onDelete: Restrict, onUpdate: Restrict, map: "volunteer_collection_collection_id_foreign")
+  volunteer               volunteer?  @relation(fields: [volunteer_id], references: [volunteer_id], onDelete: Restrict, onUpdate: Restrict, map: "volunteer_collection_volunteer_id_foreign")
 
   @@index([collection_id], map: "volunteer_collection_collection_id_foreign")
   @@index([volunteer_id], map: "volunteer_collection_volunteer_id_foreign")
-  @@ignore
 }
 
 enum volunteer_role {
