@@ -3,7 +3,6 @@
 import prisma from "~/prisma/lib/client";
 import { faker } from "@faker-js/faker";
 import cleanUp from "~/prisma/helpers/cleanUp";
-import { NUM_COLLECTIONS } from "~/prisma/collection/seed";
 
 export const NUM_GARBAGE = 10;
 
@@ -16,8 +15,12 @@ async function seedGarbage(skipCleanup = false) {
     console.log("⚠️ Skipping cleanup (SKIP_CLEANUP=true)");
   }
 
+  const collectionIds = (
+    await prisma.collection.findMany({ select: { collection_id: true } })
+  ).map((c) => c.collection_id);
+
   const fakeGarbageList = Array.from({ length: NUM_GARBAGE }).map(() => ({
-    collection_id: faker.number.int({ min: 1, max: NUM_COLLECTIONS }),
+    collection_id: faker.helpers.arrayElement(collectionIds),
     garbage_type: faker.helpers.arrayElement([
       "Plastic",
       "Metal",

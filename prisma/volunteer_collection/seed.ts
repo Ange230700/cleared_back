@@ -3,8 +3,6 @@
 import prisma from "~/prisma/lib/client";
 import { faker } from "@faker-js/faker";
 import cleanUp from "~/prisma/helpers/cleanUp";
-import { NUM_COLLECTIONS } from "~/prisma/collection/seed";
-import { NUM_VOLUNTEERS } from "~/prisma/volunteer/seed";
 
 export const NUM_VOLUNTEER_COLLECTION = 20;
 
@@ -17,11 +15,19 @@ async function seedVolunteerCollection(skipCleanup = false) {
     console.log("⚠️ Skipping cleanup (SKIP_CLEANUP=true)");
   }
 
+  const volunteerIds = (
+    await prisma.volunteer.findMany({ select: { volunteer_id: true } })
+  ).map((v) => v.volunteer_id);
+
+  const collectionIds = (
+    await prisma.collection.findMany({ select: { collection_id: true } })
+  ).map((c) => c.collection_id);
+
   const fakeVolunteerCollections = Array.from({
     length: NUM_VOLUNTEER_COLLECTION,
   }).map(() => ({
-    volunteer_id: faker.number.int({ min: 1, max: NUM_VOLUNTEERS }),
-    collection_id: faker.number.int({ min: 1, max: NUM_COLLECTIONS }),
+    volunteer_id: faker.helpers.arrayElement(volunteerIds),
+    collection_id: faker.helpers.arrayElement(collectionIds),
   }));
 
   await prisma.volunteer_collection.createMany({
