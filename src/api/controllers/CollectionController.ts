@@ -1,40 +1,44 @@
 // src\api\controllers\CollectionController.ts
 
-import { Request, Response } from "express";
+import { RequestHandler } from "express";
 import { GetAllCollections } from "~/src/application/useCases/GetAllCollections";
 import { GetCollectionById } from "~/src/application/useCases/GetCollectionById";
 import { CreateCollection } from "~/src/application/useCases/CreateCollection";
 import { UpdateCollection } from "~/src/application/useCases/UpdateCollection";
 import { DeleteCollection } from "~/src/application/useCases/DeleteCollection";
 import { CollectionRepository } from "~/src/infrastructure/repositories/CollectionRepository";
+import { toJSONSafe } from "~/src/utils/bigint-to-number";
 
 export class CollectionController {
-  private readonly getAllCollectionsUseCase: GetAllCollections;
-  private readonly getCollectionByIdUseCase: GetCollectionById;
-  private readonly createCollectionUseCase: CreateCollection;
-  private readonly updateCollectionUseCase: UpdateCollection;
-  private readonly deleteCollectionUseCase: DeleteCollection;
+  private readonly getAllCollectionsUseCase = new GetAllCollections(
+    new CollectionRepository(),
+  );
+  private readonly getCollectionByIdUseCase = new GetCollectionById(
+    new CollectionRepository(),
+  );
+  private readonly createCollectionUseCase = new CreateCollection(
+    new CollectionRepository(),
+  );
+  private readonly updateCollectionUseCase = new UpdateCollection(
+    new CollectionRepository(),
+  );
+  private readonly deleteCollectionUseCase = new DeleteCollection(
+    new CollectionRepository(),
+  );
 
-  constructor() {
-    const repository = new CollectionRepository();
-    this.getAllCollectionsUseCase = new GetAllCollections(repository);
-    this.getCollectionByIdUseCase = new GetCollectionById(repository);
-    this.createCollectionUseCase = new CreateCollection(repository);
-    this.updateCollectionUseCase = new UpdateCollection(repository);
-    this.deleteCollectionUseCase = new DeleteCollection(repository);
-  }
-
-  async getAllCollections(req: Request, res: Response): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getAllCollections: RequestHandler = async (req, res, next) => {
     try {
       const collections = await this.getAllCollectionsUseCase.execute();
-      res.status(200).json(collections);
+      res.status(200).json(toJSONSafe(collections));
     } catch (e) {
       console.error("❌ [CollectionController] getAllCollections error:", e);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  };
 
-  async getCollectionById(req: Request, res: Response): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getCollectionById: RequestHandler = async (req, res, next) => {
     try {
       const collection_id = Number(req.params.collection_id);
       if (isNaN(collection_id)) {
@@ -47,14 +51,15 @@ export class CollectionController {
         res.status(404).json({ error: "Collection not found" });
         return;
       }
-      res.status(200).json(collection);
+      res.status(200).json(toJSONSafe(collection));
     } catch (e) {
       console.error("❌ [CollectionController] getCollectionById error:", e);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  };
 
-  async createCollection(req: Request, res: Response): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  createCollection: RequestHandler = async (req, res, next) => {
     try {
       const { collection_date, collection_place } = req.body;
       if (!collection_date || !collection_place) {
@@ -67,14 +72,15 @@ export class CollectionController {
         collection_date: new Date(collection_date),
         collection_place,
       });
-      res.status(201).json(created);
+      res.status(201).json(toJSONSafe(created));
     } catch (e) {
       console.error("❌ [CollectionController] createCollection error:", e);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  };
 
-  async updateCollection(req: Request, res: Response): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  updateCollection: RequestHandler = async (req, res, next) => {
     try {
       const collection_id = Number(req.params.collection_id);
       const { collection_date, collection_place } = req.body;
@@ -102,14 +108,15 @@ export class CollectionController {
         res.status(404).json({ error: "Collection not found" });
         return;
       }
-      res.status(200).json(updated);
+      res.status(200).json(toJSONSafe(updated));
     } catch (e) {
       console.error("❌ [CollectionController] updateCollection error:", e);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  };
 
-  async deleteCollection(req: Request, res: Response): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  deleteCollection: RequestHandler = async (req, res, next) => {
     try {
       const collection_id = Number(req.params.collection_id);
       if (isNaN(collection_id)) {
@@ -126,5 +133,5 @@ export class CollectionController {
       console.error("❌ [CollectionController] deleteCollection error:", e);
       res.status(500).json({ error: "Internal server error" });
     }
-  }
+  };
 }
