@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"No test specified yet\"",
+    "test": "jest --detectOpenHandles",
     "clean": "rm -rf node_modules package-lock.json dist",
     "prebuild": "npm run prisma:generate",
     "build": "tsc",
