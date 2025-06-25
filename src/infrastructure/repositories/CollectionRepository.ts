@@ -3,6 +3,7 @@
 import { Collection } from "~/src/core/entities/Collection";
 import { ICollectionRepository } from "~/src/application/interfaces/ICollectionRepository";
 import prisma from "~/prisma/lib/client";
+import { Prisma } from "@prisma/client";
 
 export class CollectionRepository implements ICollectionRepository {
   async getAllCollections(): Promise<Collection[]> {
@@ -50,8 +51,8 @@ export class CollectionRepository implements ICollectionRepository {
     collection_id: number,
     data: { collection_date?: Date; collection_place?: string },
   ): Promise<Collection | null> {
-    const updated = await prisma.collection
-      .update({
+    try {
+      const updated = await prisma.collection.update({
         where: { collection_id: BigInt(collection_id) },
         data: {
           ...(data.collection_date && {
@@ -61,14 +62,21 @@ export class CollectionRepository implements ICollectionRepository {
             collection_place: data.collection_place,
           }),
         },
-      })
-      .catch(() => null);
-    if (!updated) return null;
-    return new Collection(
-      Number(updated.collection_id),
-      updated.collection_date,
-      updated.collection_place,
-    );
+      });
+      return new Collection(
+        Number(updated.collection_id),
+        updated.collection_date,
+        updated.collection_place,
+      );
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === "P2025"
+      ) {
+        return null;
+      }
+      throw e;
+    }
   }
 
   async deleteCollection(collection_id: number): Promise<boolean> {
@@ -77,8 +85,14 @@ export class CollectionRepository implements ICollectionRepository {
         where: { collection_id: BigInt(collection_id) },
       });
       return true;
-    } catch {
-      return false;
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === "P2025"
+      ) {
+        return false;
+      }
+      throw e;
     }
   }
 }
