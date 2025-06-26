@@ -26,18 +26,15 @@ export class VolunteerController {
     new VolunteerRepository(),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getAllVolunteers: RequestHandler = async (req, res, next) => {
     try {
       const items = await this.getAllUseCase.execute();
       res.status(200).json(toJSONSafe(items));
     } catch (e) {
-      console.error("❌ [VolunteerController] getAllVolunteers error:", e);
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getVolunteerById: RequestHandler = async (req, res, next) => {
     try {
       const volunteer_id = Number(req.params.volunteer_id);
@@ -52,12 +49,10 @@ export class VolunteerController {
       }
       res.status(200).json(toJSONSafe(item));
     } catch (e) {
-      console.error("❌ [VolunteerController] getVolunteerById error:", e);
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   createVolunteer: RequestHandler = async (req, res, next) => {
     try {
       const { volunteer_name, volunteer_email, password, role } = req.body;
@@ -73,12 +68,10 @@ export class VolunteerController {
       });
       res.status(201).json(toJSONSafe(item));
     } catch (e) {
-      console.error("❌ [VolunteerController] createVolunteer error:", e);
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   updateVolunteer: RequestHandler = async (req, res, next) => {
     try {
       const volunteer_id = Number(req.params.volunteer_id);
@@ -108,12 +101,10 @@ export class VolunteerController {
       }
       res.status(200).json(toJSONSafe(item));
     } catch (e) {
-      console.error("❌ [VolunteerController] updateVolunteer error:", e);
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   deleteVolunteer: RequestHandler = async (req, res, next) => {
     try {
       const volunteer_id = Number(req.params.volunteer_id);
@@ -128,8 +119,7 @@ export class VolunteerController {
       }
       res.status(204).send();
     } catch (e) {
-      console.error("❌ [VolunteerController] deleteVolunteer error:", e);
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 }

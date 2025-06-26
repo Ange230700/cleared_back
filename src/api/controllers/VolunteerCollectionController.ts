@@ -26,21 +26,15 @@ export class VolunteerCollectionController {
     new VolunteerCollectionRepository(),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getAllVolunteerCollections: RequestHandler = async (req, res, next) => {
     try {
       const items = await this.getAllUseCase.execute();
       res.status(200).json(toJSONSafe(items));
     } catch (e) {
-      console.error(
-        "❌ [VolunteerCollectionController] getAllVolunteerCollections error:",
-        e,
-      );
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getVolunteerCollectionById: RequestHandler = async (req, res, next) => {
     try {
       const volunteer_collection_id = Number(
@@ -57,15 +51,10 @@ export class VolunteerCollectionController {
       }
       res.status(200).json(toJSONSafe(item));
     } catch (e) {
-      console.error(
-        "❌ [VolunteerCollectionController] getVolunteerCollectionById error:",
-        e,
-      );
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   createVolunteerCollection: RequestHandler = async (req, res, next) => {
     try {
       const { volunteer_id, collection_id } = req.body;
@@ -79,15 +68,10 @@ export class VolunteerCollectionController {
       });
       res.status(201).json(toJSONSafe(item));
     } catch (e) {
-      console.error(
-        "❌ [VolunteerCollectionController] createVolunteerCollection error:",
-        e,
-      );
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   updateVolunteerCollection: RequestHandler = async (req, res, next) => {
     try {
       const volunteer_collection_id = Number(
@@ -112,15 +96,10 @@ export class VolunteerCollectionController {
       }
       res.status(200).json(toJSONSafe(item));
     } catch (e) {
-      console.error(
-        "❌ [VolunteerCollectionController] updateVolunteerCollection error:",
-        e,
-      );
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   deleteVolunteerCollection: RequestHandler = async (req, res, next) => {
     try {
       const volunteer_collection_id = Number(
@@ -137,11 +116,7 @@ export class VolunteerCollectionController {
       }
       res.status(204).send();
     } catch (e) {
-      console.error(
-        "❌ [VolunteerCollectionController] deleteVolunteerCollection error:",
-        e,
-      );
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 }

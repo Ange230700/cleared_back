@@ -4,6 +4,7 @@
 import express from "express";
 import type { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 import router from "~/src/api/router";
 
@@ -28,7 +29,7 @@ app.use(express.urlencoded());
 app.use(express.text());
 app.use(express.raw());
 
-// app.use(cookieParser());
+app.use(cookieParser());
 
 app.use("/api", router);
 
@@ -39,18 +40,14 @@ app.use(express.static("./public"));
 // Middleware for Error Logging (Uncomment to enable)
 // Important: Error-handling middleware should be defined last, after other app.use() and routes calls.
 
-// Define a middleware function to log errors
 const logErrors = (
   err: Error,
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  // Log the error to the console for debugging purposes
   console.error(err);
   console.error("on req:", req.method, req.path);
-
-  // Pass the error to the next middleware in the stack
   next(err);
 };
 

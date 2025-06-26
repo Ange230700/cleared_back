@@ -26,18 +26,15 @@ export class CollectionController {
     new CollectionRepository(),
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getAllCollections: RequestHandler = async (req, res, next) => {
     try {
       const collections = await this.getAllCollectionsUseCase.execute();
       res.status(200).json(toJSONSafe(collections));
     } catch (e) {
-      console.error("❌ [CollectionController] getAllCollections error:", e);
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getCollectionById: RequestHandler = async (req, res, next) => {
     try {
       const collection_id = Number(req.params.collection_id);
@@ -53,12 +50,10 @@ export class CollectionController {
       }
       res.status(200).json(toJSONSafe(collection));
     } catch (e) {
-      console.error("❌ [CollectionController] getCollectionById error:", e);
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   createCollection: RequestHandler = async (req, res, next) => {
     try {
       const { collection_date, collection_place } = req.body;
@@ -74,12 +69,10 @@ export class CollectionController {
       });
       res.status(201).json(toJSONSafe(created));
     } catch (e) {
-      console.error("❌ [CollectionController] createCollection error:", e);
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   updateCollection: RequestHandler = async (req, res, next) => {
     try {
       const collection_id = Number(req.params.collection_id);
@@ -110,12 +103,10 @@ export class CollectionController {
       }
       res.status(200).json(toJSONSafe(updated));
     } catch (e) {
-      console.error("❌ [CollectionController] updateCollection error:", e);
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   deleteCollection: RequestHandler = async (req, res, next) => {
     try {
       const collection_id = Number(req.params.collection_id);
@@ -130,8 +121,7 @@ export class CollectionController {
       }
       res.status(204).send();
     } catch (e) {
-      console.error("❌ [CollectionController] deleteCollection error:", e);
-      res.status(500).json({ error: "Internal server error" });
+      next(e);
     }
   };
 }
