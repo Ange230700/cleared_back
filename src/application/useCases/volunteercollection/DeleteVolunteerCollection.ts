@@ -1,4 +1,4 @@
-// src\application\useCases\DeleteVolunteerCollection.ts
+// src\application\useCases\volunteercollection\DeleteVolunteerCollection.ts
 
 import { IVolunteerCollectionRepository } from "~/src/application/interfaces/IVolunteerCollectionRepository";
 export class DeleteVolunteerCollection {

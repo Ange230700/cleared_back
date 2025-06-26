@@ -1,4 +1,4 @@
-// src/application/useCases/GetAllGarbage.ts
+// src\application\useCases\garbage\GetAllGarbage.ts
 
 import { IGarbageRepository } from "~/src/application/interfaces/IGarbageRepository";
 import { Garbage } from "~/src/core/entities/Garbage";

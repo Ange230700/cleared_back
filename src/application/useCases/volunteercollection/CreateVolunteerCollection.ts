@@ -1,4 +1,4 @@
-// src\application\useCases\CreateVolunteerCollection.ts
+// src\application\useCases\volunteercollection\CreateVolunteerCollection.ts
 
 import { IVolunteerCollectionRepository } from "~/src/application/interfaces/IVolunteerCollectionRepository";
 import { VolunteerCollection } from "~/src/core/entities/VolunteerCollection";

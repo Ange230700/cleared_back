@@ -1,11 +1,11 @@
 // src\api\controllers\CollectionController.ts
 
 import { RequestHandler } from "express";
-import { GetAllCollections } from "~/src/application/useCases/GetAllCollections";
-import { GetCollectionById } from "~/src/application/useCases/GetCollectionById";
-import { CreateCollection } from "~/src/application/useCases/CreateCollection";
-import { UpdateCollection } from "~/src/application/useCases/UpdateCollection";
-import { DeleteCollection } from "~/src/application/useCases/DeleteCollection";
+import { GetAllCollections } from "~/src/application/useCases/collection/GetAllCollections";
+import { GetCollectionById } from "~/src/application/useCases/collection/GetCollectionById";
+import { CreateCollection } from "~/src/application/useCases/collection/CreateCollection";
+import { UpdateCollection } from "~/src/application/useCases/collection/UpdateCollection";
+import { DeleteCollection } from "~/src/application/useCases/collection/DeleteCollection";
 import { CollectionRepository } from "~/src/infrastructure/repositories/CollectionRepository";
 import { toJSONSafe } from "~/src/utils/bigint-to-number";
 

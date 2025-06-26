@@ -2,11 +2,11 @@
 
 import { RequestHandler } from "express";
 import { VolunteerRepository } from "~/src/infrastructure/repositories/VolunteerRepository";
-import { GetAllVolunteers } from "~/src/application/useCases/GetAllVolunteers";
-import { GetVolunteerById } from "~/src/application/useCases/GetVolunteerById";
-import { CreateVolunteer } from "~/src/application/useCases/CreateVolunteer";
-import { UpdateVolunteer } from "~/src/application/useCases/UpdateVolunteer";
-import { DeleteVolunteer } from "~/src/application/useCases/DeleteVolunteer";
+import { GetAllVolunteers } from "~/src/application/useCases/volunteer/GetAllVolunteers";
+import { GetVolunteerById } from "~/src/application/useCases/volunteer/GetVolunteerById";
+import { CreateVolunteer } from "~/src/application/useCases/volunteer/CreateVolunteer";
+import { UpdateVolunteer } from "~/src/application/useCases/volunteer/UpdateVolunteer";
+import { DeleteVolunteer } from "~/src/application/useCases/volunteer/DeleteVolunteer";
 import { toJSONSafe } from "~/src/utils/bigint-to-number";
 
 export class VolunteerController {

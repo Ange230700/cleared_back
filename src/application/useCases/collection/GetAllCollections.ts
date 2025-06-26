@@ -1,4 +1,4 @@
-// src\application\useCases\GetAllCollections.ts
+// src\application\useCases\collection\GetAllCollections.ts
 
 import { Collection } from "~/src/core/entities/Collection";
 import { ICollectionRepository } from "~/src/application/interfaces/ICollectionRepository";

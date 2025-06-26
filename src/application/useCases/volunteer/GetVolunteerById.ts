@@ -1,4 +1,4 @@
-// src\application\useCases\GetVolunteerById.ts
+// src\application\useCases\volunteer\GetVolunteerById.ts
 
 import { IVolunteerRepository } from "~/src/application/interfaces/IVolunteerRepository";
 import { Volunteer } from "~/src/core/entities/Volunteer";

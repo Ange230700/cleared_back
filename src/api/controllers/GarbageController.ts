@@ -2,11 +2,11 @@
 
 import { RequestHandler } from "express";
 import { GarbageRepository } from "~/src/infrastructure/repositories/GarbageRepository";
-import { GetAllGarbage } from "~/src/application/useCases/GetAllGarbage";
-import { GetGarbageById } from "~/src/application/useCases/GetGarbageById";
-import { CreateGarbage } from "~/src/application/useCases/CreateGarbage";
-import { UpdateGarbage } from "~/src/application/useCases/UpdateGarbage";
-import { DeleteGarbage } from "~/src/application/useCases/DeleteGarbage";
+import { GetAllGarbage } from "~/src/application/useCases/garbage/GetAllGarbage";
+import { GetGarbageById } from "~/src/application/useCases/garbage/GetGarbageById";
+import { CreateGarbage } from "~/src/application/useCases/garbage/CreateGarbage";
+import { UpdateGarbage } from "~/src/application/useCases/garbage/UpdateGarbage";
+import { DeleteGarbage } from "~/src/application/useCases/garbage/DeleteGarbage";
 import { toJSONSafe } from "~/src/utils/bigint-to-number";
 
 export class GarbageController {

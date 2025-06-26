@@ -1,4 +1,4 @@
-// src\application\useCases\DeleteCollection.ts
+// src\application\useCases\collection\DeleteCollection.ts
 
 import { ICollectionRepository } from "~/src/application/interfaces/ICollectionRepository";
 
