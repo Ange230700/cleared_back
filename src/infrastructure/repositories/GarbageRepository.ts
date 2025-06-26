@@ -33,11 +33,16 @@ export class GarbageRepository implements IGarbageRepository {
   }
 
   async createGarbage(data: {
+    collection_id?: number | null;
     garbage_type: string;
     quantity_kg: number;
   }): Promise<Garbage> {
     const created = await prisma.garbage.create({
       data: {
+        ...(data.collection_id !== undefined && {
+          collection_id:
+            data.collection_id !== null ? BigInt(data.collection_id) : null,
+        }),
         garbage_type: data.garbage_type,
         quantity_kg: data.quantity_kg,
       },

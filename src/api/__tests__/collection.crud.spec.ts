@@ -3,6 +3,7 @@
 import request from "supertest";
 import app from "~/src/api/index";
 import { faker } from "@faker-js/faker";
+import prisma from "~/prisma/lib/client";
 
 type CollectionResponse = {
   collection_id: number;
@@ -23,12 +24,16 @@ async function createCollection(override = {}) {
     collection_place: faker.location.city(),
   };
   const response = await request(app)
-    .post("/collections")
+    .post("/api/collections")
     .send({ ...base, ...override });
   return response;
 }
 
 describe("Collection CRUD API", () => {
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
   let createdCollection: CollectionResponse;
 
   // Create
@@ -43,7 +48,7 @@ describe("Collection CRUD API", () => {
 
   // Read (GET ALL)
   it("should fetch all collections", async () => {
-    const res = await request(app).get("/collections");
+    const res = await request(app).get("/api/collections");
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(
@@ -57,7 +62,7 @@ describe("Collection CRUD API", () => {
   // Read (GET ONE)
   it("should fetch a collection by id", async () => {
     const res = await request(app).get(
-      `/collections/${createdCollection.collection_id}`,
+      `/api/collections/${createdCollection.collection_id}`,
     );
     expect(res.status).toBe(200);
     expect(res.body.collection_id).toBe(createdCollection.collection_id);
@@ -67,7 +72,7 @@ describe("Collection CRUD API", () => {
   it("should update a collection", async () => {
     const newPlace = faker.location.city();
     const res = await request(app)
-      .put(`/collections/${createdCollection.collection_id}`)
+      .put(`/api/collections/${createdCollection.collection_id}`)
       .send({ collection_place: newPlace });
     expect(res.status).toBe(200);
     expect(res.body.collection_place).toBe(newPlace);
@@ -76,7 +81,7 @@ describe("Collection CRUD API", () => {
   // Delete
   it("should delete a collection", async () => {
     const res = await request(app).delete(
-      `/collections/${createdCollection.collection_id}`,
+      `/api/collections/${createdCollection.collection_id}`,
     );
     expect(res.status).toBe(204);
   });
@@ -84,7 +89,7 @@ describe("Collection CRUD API", () => {
   // Confirm deletion
   it("should return 404 for deleted collection", async () => {
     const res = await request(app).get(
-      `/collections/${createdCollection.collection_id}`,
+      `/api/collections/${createdCollection.collection_id}`,
     );
     expect(res.status).toBe(404);
   });
@@ -92,14 +97,14 @@ describe("Collection CRUD API", () => {
   // Edge: update non-existent
   it("should 404 on update for non-existent collection", async () => {
     const res = await request(app)
-      .put("/collections/999999")
+      .put("/api/collections/999999")
       .send({ collection_place: faker.location.city() });
     expect(res.status).toBe(404);
   });
 
   // Edge: delete non-existent
   it("should 404 on delete for non-existent collection", async () => {
-    const res = await request(app).delete("/collections/999999");
+    const res = await request(app).delete("/api/collections/999999");
     expect(res.status).toBe(404);
   });
 });

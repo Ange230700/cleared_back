@@ -4,6 +4,7 @@ import request from "supertest";
 import app from "~/src/api/index";
 import { faker } from "@faker-js/faker";
 import { volunteer_role } from "@prisma/client";
+import prisma from "~/prisma/lib/client";
 
 type VolunteerResponse = {
   volunteer_id: number;
@@ -21,12 +22,16 @@ async function createVolunteer(override = {}) {
     role: faker.helpers.arrayElement<volunteer_role>(["admin", "attendee"]),
   };
   const response = await request(app)
-    .post("/volunteers")
+    .post("/api/volunteers")
     .send({ ...base, ...override });
   return response;
 }
 
 describe("Volunteer CRUD API", () => {
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
   let createdVolunteer: VolunteerResponse;
 
   // Create
@@ -46,7 +51,7 @@ describe("Volunteer CRUD API", () => {
 
   // Read (GET ALL)
   it("should fetch all volunteers", async () => {
-    const res = await request(app).get("/volunteers");
+    const res = await request(app).get("/api/volunteers");
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(
@@ -60,7 +65,7 @@ describe("Volunteer CRUD API", () => {
   // Read (GET ONE)
   it("should fetch a volunteer by id", async () => {
     const res = await request(app).get(
-      `/volunteers/${createdVolunteer.volunteer_id}`,
+      `/api/volunteers/${createdVolunteer.volunteer_id}`,
     );
     expect(res.status).toBe(200);
     expect(res.body.volunteer_id).toBe(createdVolunteer.volunteer_id);
@@ -70,7 +75,7 @@ describe("Volunteer CRUD API", () => {
   it("should update a volunteer", async () => {
     const newName = faker.person.fullName();
     const res = await request(app)
-      .put(`/volunteers/${createdVolunteer.volunteer_id}`)
+      .put(`/api/volunteers/${createdVolunteer.volunteer_id}`)
       .send({ volunteer_name: newName });
     expect(res.status).toBe(200);
     expect(res.body.volunteer_name).toBe(newName);
@@ -79,7 +84,7 @@ describe("Volunteer CRUD API", () => {
   // Delete
   it("should delete a volunteer", async () => {
     const res = await request(app).delete(
-      `/volunteers/${createdVolunteer.volunteer_id}`,
+      `/api/volunteers/${createdVolunteer.volunteer_id}`,
     );
     expect(res.status).toBe(204);
   });
@@ -87,7 +92,7 @@ describe("Volunteer CRUD API", () => {
   // Confirm deletion
   it("should return 404 for deleted volunteer", async () => {
     const res = await request(app).get(
-      `/volunteers/${createdVolunteer.volunteer_id}`,
+      `/api/volunteers/${createdVolunteer.volunteer_id}`,
     );
     expect(res.status).toBe(404);
   });
@@ -95,14 +100,14 @@ describe("Volunteer CRUD API", () => {
   // Edge: update non-existent
   it("should 404 on update for non-existent volunteer", async () => {
     const res = await request(app)
-      .put("/volunteers/999999")
+      .put("/api/volunteers/999999")
       .send({ volunteer_name: faker.person.fullName() });
     expect(res.status).toBe(404);
   });
 
   // Edge: delete non-existent
   it("should 404 on delete for non-existent volunteer", async () => {
-    const res = await request(app).delete("/volunteers/999999");
+    const res = await request(app).delete("/api/volunteers/999999");
     expect(res.status).toBe(404);
   });
 });

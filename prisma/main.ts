@@ -7,6 +7,10 @@ import seedGarbage from "~/prisma/garbage/seed";
 import seedVolunteerCollection from "~/prisma/volunteer_collection/seed";
 
 async function main() {
+  if (process.env.NODE_ENV === "prod") {
+    throw new Error("Do not run seeding or cleanup scripts in prod!");
+  }
+
   console.log("🌱 Seeding...");
 
   const skipCleanup = process.env.SKIP_CLEANUP === "true";

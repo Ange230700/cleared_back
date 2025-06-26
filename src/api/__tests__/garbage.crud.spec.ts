@@ -16,7 +16,7 @@ type GarbageResponse = {
 async function createGarbage(override = {}) {
   const collectionIds = (
     await prisma.collection.findMany({ select: { collection_id: true } })
-  ).map((c) => c.collection_id);
+  ).map((c) => Number(c.collection_id));
 
   const base = {
     collection_id: faker.helpers.arrayElement(collectionIds),
@@ -33,12 +33,16 @@ async function createGarbage(override = {}) {
     ),
   };
   const response = await request(app)
-    .post("/garbage")
+    .post("/api/garbage")
     .send({ ...base, ...override });
   return response;
 }
 
 describe("Garbage CRUD API", () => {
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
   let createdGarbage: GarbageResponse;
 
   // Create
@@ -47,17 +51,17 @@ describe("Garbage CRUD API", () => {
       await prisma.collection.findMany({ select: { collection_id: true } }),
     );
     const res = await createGarbage({
-      collection_id: randomCollection.collection_id,
+      collection_id: Number(randomCollection.collection_id),
     });
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty("garbage_id");
-    expect(res.body.collection_id).toBe(randomCollection.collection_id);
+    expect(res.body.collection_id).toBe(Number(randomCollection.collection_id));
     createdGarbage = res.body;
   });
 
   // Read (GET ALL)
   it("should fetch all garbage", async () => {
-    const res = await request(app).get("/garbage");
+    const res = await request(app).get("/api/garbage");
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(
@@ -69,7 +73,9 @@ describe("Garbage CRUD API", () => {
 
   // Read (GET ONE)
   it("should fetch a garbage by id", async () => {
-    const res = await request(app).get(`/garbage/${createdGarbage.garbage_id}`);
+    const res = await request(app).get(
+      `/api/garbage/${createdGarbage.garbage_id}`,
+    );
     expect(res.status).toBe(200);
     expect(res.body.garbage_id).toBe(createdGarbage.garbage_id);
   });
@@ -88,7 +94,7 @@ describe("Garbage CRUD API", () => {
       faker.number.float({ min: 0.5, max: 50, fractionDigits: 1 }).toFixed(1),
     );
     const res = await request(app)
-      .put(`/garbage/${createdGarbage.garbage_id}`)
+      .put(`/api/garbage/${createdGarbage.garbage_id}`)
       .send({ garbage_type: newType, quantity_kg: newQuantity });
     expect(res.status).toBe(200);
     expect(res.body.garbage_type).toBe(newType);
@@ -98,21 +104,23 @@ describe("Garbage CRUD API", () => {
   // Delete
   it("should delete a garbage", async () => {
     const res = await request(app).delete(
-      `/garbage/${createdGarbage.garbage_id}`,
+      `/api/garbage/${createdGarbage.garbage_id}`,
     );
     expect(res.status).toBe(204);
   });
 
   // Confirm deletion
   it("should return 404 for deleted garbage", async () => {
-    const res = await request(app).get(`/garbage/${createdGarbage.garbage_id}`);
+    const res = await request(app).get(
+      `/api/garbage/${createdGarbage.garbage_id}`,
+    );
     expect(res.status).toBe(404);
   });
 
   // Edge: update non-existent
   it("should 404 on update for non-existent garbage", async () => {
     const res = await request(app)
-      .put("/garbage/999999")
+      .put("/api/garbage/999999")
       .send({
         garbage_type: faker.helpers.arrayElement([
           "Plastic",
@@ -133,7 +141,7 @@ describe("Garbage CRUD API", () => {
 
   // Edge: delete non-existent
   it("should 404 on delete for non-existent garbage", async () => {
-    const res = await request(app).delete("/garbage/999999");
+    const res = await request(app).delete("/api/garbage/999999");
     expect(res.status).toBe(404);
   });
 });

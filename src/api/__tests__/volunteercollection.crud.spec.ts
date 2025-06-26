@@ -4,6 +4,7 @@ import request from "supertest";
 import app from "~/src/api/index";
 import { faker } from "@faker-js/faker";
 import prisma from "~/prisma/lib/client";
+import http from "http";
 
 type VolunteerCollectionResponse = {
   volunteer_collection_id: number;
@@ -11,26 +12,39 @@ type VolunteerCollectionResponse = {
   collection_id: number | null;
 };
 
+let server: http.Server;
+
 async function createVolunteerCollection(override = {}) {
   const volunteerIds = (
     await prisma.volunteer.findMany({ select: { volunteer_id: true } })
-  ).map((v) => v.volunteer_id);
+  ).map((v) => Number(v.volunteer_id));
 
   const collectionIds = (
     await prisma.collection.findMany({ select: { collection_id: true } })
-  ).map((c) => c.collection_id);
+  ).map((c) => Number(c.collection_id));
 
   const base = {
     volunteer_id: faker.helpers.arrayElement(volunteerIds),
     collection_id: faker.helpers.arrayElement(collectionIds),
   };
-  const response = await request(app)
-    .post("/volunteer-collections")
+  const response = await request(server)
+    .post("/api/volunteer_collection")
     .send({ ...base, ...override });
   return response;
 }
 
 describe("VolunteerCollection CRUD API", () => {
+  beforeAll((done) => {
+    server = app.listen(0, () => {
+      done();
+    });
+  });
+
+  afterAll(async () => {
+    await prisma.$disconnect();
+    server.close();
+  });
+
   let createdVolunteerCollection: VolunteerCollectionResponse;
 
   // Create
@@ -42,19 +56,19 @@ describe("VolunteerCollection CRUD API", () => {
       await prisma.collection.findMany({ select: { collection_id: true } }),
     );
     const res = await createVolunteerCollection({
-      volunteer_id: randomVolunteer.volunteer_id,
-      collection_id: randomCollection.collection_id,
+      volunteer_id: Number(randomVolunteer.volunteer_id),
+      collection_id: Number(randomCollection.collection_id),
     });
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty("volunteer_collection_id");
-    expect(res.body.volunteer_id).toBe(randomVolunteer.volunteer_id);
-    expect(res.body.collection_id).toBe(randomCollection.collection_id);
+    expect(res.body.volunteer_id).toBe(Number(randomVolunteer.volunteer_id));
+    expect(res.body.collection_id).toBe(Number(randomCollection.collection_id));
     createdVolunteerCollection = res.body;
   });
 
   // Read (GET ALL)
   it("should fetch all volunteer_collections", async () => {
-    const res = await request(app).get("/volunteer-collections");
+    const res = await request(server).get("/api/volunteer_collection");
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(
@@ -68,8 +82,8 @@ describe("VolunteerCollection CRUD API", () => {
 
   // Read (GET ONE)
   it("should fetch a volunteer_collection by id", async () => {
-    const res = await request(app).get(
-      `/volunteer-collections/${createdVolunteerCollection.volunteer_collection_id}`,
+    const res = await request(server).get(
+      `/api/volunteer_collection/${createdVolunteerCollection.volunteer_collection_id}`,
     );
     expect(res.status).toBe(200);
     expect(res.body.volunteer_collection_id).toBe(
@@ -85,51 +99,57 @@ describe("VolunteerCollection CRUD API", () => {
     const newCollection = faker.helpers.arrayElement(
       await prisma.collection.findMany({ select: { collection_id: true } }),
     );
-    const res = await request(app)
+    const res = await request(server)
       .put(
-        `/volunteer-collections/${createdVolunteerCollection.volunteer_collection_id}`,
+        `/api/volunteer_collection/${createdVolunteerCollection.volunteer_collection_id}`,
       )
       .send({
-        volunteer_id: newVolunteer.volunteer_id,
-        collection_id: newCollection.collection_id,
+        volunteer_id: Number(newVolunteer.volunteer_id),
+        collection_id: Number(newCollection.collection_id),
       });
     expect(res.status).toBe(200);
-    expect(res.body.volunteer_id).toBe(newVolunteer.volunteer_id);
-    expect(res.body.collection_id).toBe(newCollection.collection_id);
+    expect(res.body.volunteer_id).toBe(Number(newVolunteer.volunteer_id));
+    expect(res.body.collection_id).toBe(Number(newCollection.collection_id));
   });
 
   // Delete
   it("should delete a volunteer_collection", async () => {
-    const res = await request(app).delete(
-      `/volunteer-collections/${createdVolunteerCollection.volunteer_collection_id}`,
+    const res = await request(server).delete(
+      `/api/volunteer_collection/${createdVolunteerCollection.volunteer_collection_id}`,
     );
     expect(res.status).toBe(204);
   });
 
   // Confirm deletion
   it("should return 404 for deleted volunteer_collection", async () => {
-    const res = await request(app).get(
-      `/volunteer-collections/${createdVolunteerCollection.volunteer_collection_id}`,
+    const res = await request(server).get(
+      `/api/volunteer_collection/${createdVolunteerCollection.volunteer_collection_id}`,
     );
     expect(res.status).toBe(404);
   });
 
   // Edge: update non-existent
   it("should 404 on update for non-existent volunteer_collection", async () => {
-    const res = await request(app)
-      .put("/volunteer-collections/999999")
+    const res = await request(server)
+      .put("/api/volunteer_collection/999999")
       .send({
-        volunteer_id: faker.helpers.arrayElement(
-          (
-            await prisma.volunteer.findMany({ select: { volunteer_id: true } })
-          ).map((v) => v.volunteer_id),
+        volunteer_id: Number(
+          faker.helpers.arrayElement(
+            (
+              await prisma.volunteer.findMany({
+                select: { volunteer_id: true },
+              })
+            ).map((v) => v.volunteer_id),
+          ),
         ),
-        collection_id: faker.helpers.arrayElement(
-          (
-            await prisma.collection.findMany({
-              select: { collection_id: true },
-            })
-          ).map((c) => c.collection_id),
+        collection_id: Number(
+          faker.helpers.arrayElement(
+            (
+              await prisma.collection.findMany({
+                select: { collection_id: true },
+              })
+            ).map((c) => c.collection_id),
+          ),
         ),
       });
     expect(res.status).toBe(404);
@@ -137,7 +157,9 @@ describe("VolunteerCollection CRUD API", () => {
 
   // Edge: delete non-existent
   it("should 404 on delete for non-existent volunteer_collection", async () => {
-    const res = await request(app).delete("/volunteer-collections/999999");
+    const res = await request(server).delete(
+      "/api/volunteer_collection/999999",
+    );
     expect(res.status).toBe(404);
   });
 });

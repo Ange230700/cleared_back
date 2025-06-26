@@ -2,16 +2,14 @@
 
 import prisma from "~/prisma/lib/client";
 import { faker } from "@faker-js/faker";
-import cleanUp from "~/prisma/helpers/cleanUp";
+import deleteSafely from "~/prisma/helpers/deleteSafely";
 import { volunteer_role } from "@prisma/client";
 
 export const NUM_VOLUNTEERS = 10;
 
 async function seedVolunteers(skipCleanup = false) {
   if (!skipCleanup) {
-    console.log("🧹 Cleaning up…");
-    await cleanUp();
-    console.log("🧹 Cleaning up complete.");
+    await deleteSafely(() => prisma.volunteer.deleteMany(), "volunteer");
   } else {
     console.log("⚠️ Skipping cleanup (SKIP_CLEANUP=true)");
   }

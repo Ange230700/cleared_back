@@ -2,15 +2,13 @@
 
 import prisma from "~/prisma/lib/client";
 import { faker } from "@faker-js/faker";
-import cleanUp from "~/prisma/helpers/cleanUp";
+import deleteSafely from "~/prisma/helpers/deleteSafely";
 
 export const NUM_COLLECTIONS = 10;
 
 async function seedCollections(skipCleanup = false) {
   if (!skipCleanup) {
-    console.log("🧹 Cleaning up…");
-    await cleanUp();
-    console.log("🧹 Cleaning up complete.");
+    await deleteSafely(() => prisma.collection.deleteMany(), "collection");
   } else {
     console.log("⚠️ Skipping cleanup (SKIP_CLEANUP=true)");
   }

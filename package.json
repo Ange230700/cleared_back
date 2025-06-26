@@ -24,7 +24,8 @@
     "prisma:db:seed": "prisma db seed",
     "prisma:db:push": "prisma db push",
     "prisma:db:pull": "prisma db pull",
-    "prisma:format": "prisma format"
+    "prisma:format": "prisma format",
+    "db:cleanup": "tsx prisma/helpers/cleanUp.ts"
   },
   "repository": {
     "type": "git",
