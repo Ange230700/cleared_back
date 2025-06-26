@@ -1,6 +1,5 @@
 // src\api\index.ts
 
-// import path from "path";
 import express from "express";
 import type { Request, Response, NextFunction } from "express";
 import cors from "cors";
@@ -33,7 +32,7 @@ app.use(cookieParser());
 
 app.use("/api", router);
 
-app.use(express.static("./public"));
+app.use(express.static("../../public/"));
 
 /* ************************************************************************* */
 
@@ -55,10 +54,6 @@ const logErrors = (
 app.use(logErrors);
 
 /* ************************************************************************* */
-
-// app.get("*", (req, res) => {
-//   res.sendFile(path.join(__dirname, "../public/index.html"));
-// });
 
 if (process.env.NODE_ENV !== "test") {
   const PORT = process.env.PORT ?? 3000;
