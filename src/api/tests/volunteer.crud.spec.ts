@@ -1,4 +1,4 @@
-// src\api\__tests__\volunteer.crud.spec.ts
+// src\api\tests\volunteer.crud.spec.ts
 
 import request from "supertest";
 import app from "~/src/api/index";
