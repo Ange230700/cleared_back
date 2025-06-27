@@ -6,6 +6,7 @@
     "mydb",
     "mysql",
     "prisma",
-    "volunteercollection"
+    "volunteercollection",
+    "wrongpass"
   ]
 }

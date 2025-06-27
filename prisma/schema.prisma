@@ -30,10 +30,11 @@ model garbage {
 model volunteer {
   volunteer_id         BigInt                 @id @default(autoincrement())
   volunteer_name       String                 @db.VarChar(255)
-  volunteer_email      String                 @db.VarChar(255)
+  volunteer_email      String                 @unique @db.VarChar(255)
   password             String                 @db.Text
   role                 volunteer_role         @default(attendee)
   volunteer_collection volunteer_collection[]
+  session              session[]
 }
 
 model volunteer_collection {
@@ -45,6 +46,18 @@ model volunteer_collection {
 
   @@index([collection_id], map: "volunteer_collection_collection_id_foreign")
   @@index([volunteer_id], map: "volunteer_collection_volunteer_id_foreign")
+}
+
+model session {
+  token_id     String   @id
+  volunteer_id BigInt
+  issued_at    DateTime @default(now())
+  expires_at   DateTime
+
+  volunteer volunteer @relation(fields: [volunteer_id], references: [volunteer_id], onDelete: Cascade)
+
+  @@index([volunteer_id])
+  @@index([expires_at])
 }
 
 enum volunteer_role {

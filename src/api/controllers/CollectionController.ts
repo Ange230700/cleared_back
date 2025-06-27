@@ -26,102 +26,84 @@ export class CollectionController {
     new CollectionRepository(),
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getAllCollections: RequestHandler = async (req, res, next) => {
-    try {
-      const collections = await this.getAllCollectionsUseCase.execute();
-      res.status(200).json(toJSONSafe(collections));
-    } catch (e) {
-      next(e);
-    }
+    const collections = await this.getAllCollectionsUseCase.execute();
+    res.status(200).json(toJSONSafe(collections));
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getCollectionById: RequestHandler = async (req, res, next) => {
-    try {
-      const collection_id = Number(req.params.collection_id);
-      if (isNaN(collection_id)) {
-        res.status(400).json({ error: "Invalid collection collection_id" });
-        return;
-      }
-      const collection =
-        await this.getCollectionByIdUseCase.execute(collection_id);
-      if (!collection) {
-        res.status(404).json({ error: "Collection not found" });
-        return;
-      }
-      res.status(200).json(toJSONSafe(collection));
-    } catch (e) {
-      next(e);
+    const collection_id = Number(req.params.collection_id);
+    if (isNaN(collection_id)) {
+      res.status(400).json({ error: "Invalid collection collection_id" });
+      return;
     }
+    const collection =
+      await this.getCollectionByIdUseCase.execute(collection_id);
+    if (!collection) {
+      res.status(404).json({ error: "Collection not found" });
+      return;
+    }
+    res.status(200).json(toJSONSafe(collection));
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   createCollection: RequestHandler = async (req, res, next) => {
-    try {
-      const { collection_date, collection_place } = req.body;
-      if (!collection_date || !collection_place) {
-        res.status(400).json({
-          error: "Missing 'collection_date' or 'collection_place' in body",
-        });
-        return;
-      }
-      const created = await this.createCollectionUseCase.execute({
-        collection_date: new Date(collection_date),
-        collection_place,
+    const { collection_date, collection_place } = req.body;
+    if (!collection_date || !collection_place) {
+      res.status(400).json({
+        error: "Missing 'collection_date' or 'collection_place' in body",
       });
-      res.status(201).json(toJSONSafe(created));
-    } catch (e) {
-      next(e);
+      return;
     }
+    const created = await this.createCollectionUseCase.execute({
+      collection_date: new Date(collection_date),
+      collection_place,
+    });
+    res.status(201).json(toJSONSafe(created));
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   updateCollection: RequestHandler = async (req, res, next) => {
-    try {
-      const collection_id = Number(req.params.collection_id);
-      const { collection_date, collection_place } = req.body;
-      if (isNaN(collection_id)) {
-        res.status(400).json({ error: "Invalid collection collection_id" });
-        return;
-      }
-      if (!collection_date && !collection_place) {
-        res.status(400).json({
-          error:
-            "At least one of 'collection_date' or 'collection_place' must be provided",
-        });
-        return;
-      }
-      const updated = await this.updateCollectionUseCase.execute(
-        collection_id,
-        {
-          ...(collection_date && {
-            collection_date: new Date(collection_date),
-          }),
-          ...(collection_place && { collection_place }),
-        },
-      );
-      if (!updated) {
-        res.status(404).json({ error: "Collection not found" });
-        return;
-      }
-      res.status(200).json(toJSONSafe(updated));
-    } catch (e) {
-      next(e);
+    const collection_id = Number(req.params.collection_id);
+    const { collection_date, collection_place } = req.body;
+    if (isNaN(collection_id)) {
+      res.status(400).json({ error: "Invalid collection collection_id" });
+      return;
     }
+    if (!collection_date && !collection_place) {
+      res.status(400).json({
+        error:
+          "At least one of 'collection_date' or 'collection_place' must be provided",
+      });
+      return;
+    }
+    const updated = await this.updateCollectionUseCase.execute(collection_id, {
+      ...(collection_date && {
+        collection_date: new Date(collection_date),
+      }),
+      ...(collection_place && { collection_place }),
+    });
+    if (!updated) {
+      res.status(404).json({ error: "Collection not found" });
+      return;
+    }
+    res.status(200).json(toJSONSafe(updated));
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   deleteCollection: RequestHandler = async (req, res, next) => {
-    try {
-      const collection_id = Number(req.params.collection_id);
-      if (isNaN(collection_id)) {
-        res.status(400).json({ error: "Invalid collection collection_id" });
-        return;
-      }
-      const deleted = await this.deleteCollectionUseCase.execute(collection_id);
-      if (!deleted) {
-        res.status(404).json({ error: "Collection not found" });
-        return;
-      }
-      res.status(204).send();
-    } catch (e) {
-      next(e);
+    const collection_id = Number(req.params.collection_id);
+    if (isNaN(collection_id)) {
+      res.status(400).json({ error: "Invalid collection collection_id" });
+      return;
     }
+    const deleted = await this.deleteCollectionUseCase.execute(collection_id);
+    if (!deleted) {
+      res.status(404).json({ error: "Collection not found" });
+      return;
+    }
+    res.status(204).send();
   };
 }

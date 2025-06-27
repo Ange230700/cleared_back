@@ -4,6 +4,7 @@ import prisma from "~/prisma/lib/client";
 import seedVolunteers from "~/prisma/volunteer/seed";
 import seedCollections from "~/prisma/collection/seed";
 import seedGarbage from "~/prisma/garbage/seed";
+import seedSessions from "~/prisma/session/seed";
 import seedVolunteerCollection from "~/prisma/volunteer_collection/seed";
 
 async function main() {
@@ -18,6 +19,7 @@ async function main() {
   await seedVolunteers(skipCleanup);
   await seedCollections(skipCleanup);
   await seedGarbage(skipCleanup);
+  await seedSessions(skipCleanup);
   await seedVolunteerCollection(skipCleanup);
 
   console.log("🌱 Seeding complete.");
