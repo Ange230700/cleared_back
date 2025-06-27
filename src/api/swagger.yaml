@@ -1,0 +1,790 @@
+# src\api\swagger.yaml
+
+openapi: 3.0.0
+info:
+  title: Cleared API
+  version: 1.0.0
+  description: REST API documentation for Cleared project
+
+servers:
+  - url: /api
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Volunteer:
+      type: object
+      properties:
+        volunteer_id:
+          type: integer
+        volunteer_name:
+          type: string
+        volunteer_email:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [admin, attendee]
+      required: [volunteer_name, volunteer_email, password]
+    VolunteerSafe:
+      type: object
+      properties:
+        volunteer_id:
+          type: integer
+        volunteer_name:
+          type: string
+        volunteer_email:
+          type: string
+        role:
+          type: string
+          enum: [admin, attendee]
+    Collection:
+      type: object
+      properties:
+        collection_id:
+          type: integer
+        collection_date:
+          type: string
+          format: date
+        collection_place:
+          type: string
+    Garbage:
+      type: object
+      properties:
+        garbage_id:
+          type: integer
+        collection_id:
+          type: integer
+          nullable: true
+        garbage_type:
+          type: string
+        quantity_kg:
+          type: number
+          format: float
+    VolunteerCollection:
+      type: object
+      properties:
+        volunteer_collection_id:
+          type: integer
+        volunteer_id:
+          type: integer
+          nullable: true
+        collection_id:
+          type: integer
+          nullable: true
+
+paths:
+  /auth/register:
+    post:
+      summary: Register a new volunteer
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: "#/components/schemas/Volunteer"
+                - required: [volunteer_name, volunteer_email, password]
+            example:
+              volunteer_name: "John Doe"
+              volunteer_email: "john@example.com"
+              password: "SecurePass123!"
+              role: "attendee"
+      responses:
+        201:
+          description: Volunteer registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerSafe"
+              example:
+                volunteer_id: 1
+                volunteer_name: "John Doe"
+                volunteer_email: "john@example.com"
+                role: "attendee"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: "Missing fields"
+
+  /auth/login:
+    post:
+      summary: Login as volunteer
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                volunteer_email:
+                  type: string
+                password:
+                  type: string
+            example:
+              volunteer_email: "john@example.com"
+              password: "SecurePass123!"
+      responses:
+        200:
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  user:
+                    $ref: "#/components/schemas/VolunteerSafe"
+              example:
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+                user:
+                  volunteer_id: 1
+                  volunteer_name: "John Doe"
+                  volunteer_email: "john@example.com"
+                  role: "attendee"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                error: "Invalid credentials"
+
+  /auth/refresh:
+    post:
+      summary: Refresh access token using refresh_token cookie
+      tags: [Authentication]
+      responses:
+        200:
+          description: Access token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  user:
+                    $ref: "#/components/schemas/VolunteerSafe"
+              example:
+                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+                user:
+                  volunteer_id: 1
+                  volunteer_name: "John Doe"
+                  volunteer_email: "john@example.com"
+                  role: "attendee"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              example:
+                error: "Invalid refresh token"
+
+  /auth/logout:
+    post:
+      summary: Logout user (removes refresh token)
+      tags: [Authentication]
+      responses:
+        204:
+          description: Logged out
+
+  /collections:
+    get:
+      summary: Get all collections
+      tags: [Collection]
+      responses:
+        200:
+          description: List of collections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Collection"
+              example:
+                - collection_id: 1
+                  collection_date: "2024-06-22"
+                  collection_place: "Paris"
+                - collection_id: 2
+                  collection_date: "2024-06-23"
+                  collection_place: "Lyon"
+    post:
+      summary: Create collection
+      tags: [Collection]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                collection_date:
+                  type: string
+                  format: date
+                collection_place:
+                  type: string
+            example:
+              collection_date: "2024-06-25"
+              collection_place: "Marseille"
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Collection"
+              example:
+                collection_id: 11
+                collection_date: "2024-06-25"
+                collection_place: "Marseille"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: "Missing 'collection_date' or 'collection_place' in body"
+
+  /collections/{collection_id}:
+    get:
+      summary: Get collection by id
+      tags: [Collection]
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Collection found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Collection"
+              example:
+                collection_id: 1
+                collection_date: "2024-06-22"
+                collection_place: "Paris"
+        404:
+          description: Not found
+          content:
+            application/json:
+              example:
+                error: "Collection not found"
+    put:
+      summary: Update collection
+      tags: [Collection]
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                collection_date:
+                  type: string
+                  format: date
+                collection_place:
+                  type: string
+            example:
+              collection_place: "Nice"
+      responses:
+        200:
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Collection"
+              example:
+                collection_id: 1
+                collection_date: "2024-06-22"
+                collection_place: "Nice"
+        404:
+          description: Not found
+          content:
+            application/json:
+              example:
+                error: "Collection not found"
+    delete:
+      summary: Delete collection
+      tags: [Collection]
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Deleted
+        404:
+          description: Not found
+          content:
+            application/json:
+              example:
+                error: "Collection not found"
+
+  /garbage:
+    get:
+      summary: Get all garbage items
+      tags: [Garbage]
+      responses:
+        200:
+          description: List of garbage
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Garbage"
+              example:
+                - garbage_id: 1
+                  collection_id: 1
+                  garbage_type: "Plastic"
+                  quantity_kg: 2.5
+                - garbage_id: 2
+                  collection_id: 1
+                  garbage_type: "Paper"
+                  quantity_kg: 4.1
+    post:
+      summary: Create a garbage item
+      tags: [Garbage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                collection_id:
+                  type: integer
+                  nullable: true
+                garbage_type:
+                  type: string
+                quantity_kg:
+                  type: number
+                  format: float
+            example:
+              collection_id: 1
+              garbage_type: "Plastic"
+              quantity_kg: 2.5
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Garbage"
+              example:
+                garbage_id: 10
+                collection_id: 1
+                garbage_type: "Plastic"
+                quantity_kg: 2.5
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: "Missing required fields"
+
+  /garbage/{garbage_id}:
+    get:
+      summary: Get a garbage item by id
+      tags: [Garbage]
+      parameters:
+        - name: garbage_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Garbage found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Garbage"
+              example:
+                garbage_id: 2
+                collection_id: 1
+                garbage_type: "Paper"
+                quantity_kg: 4.1
+        404:
+          description: Not found
+          content:
+            application/json:
+              example:
+                error: "Not found"
+    put:
+      summary: Update a garbage item
+      tags: [Garbage]
+      parameters:
+        - name: garbage_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                collection_id:
+                  type: integer
+                  nullable: true
+                garbage_type:
+                  type: string
+                quantity_kg:
+                  type: number
+                  format: float
+            example:
+              garbage_type: "Glass"
+              quantity_kg: 3.7
+      responses:
+        200:
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Garbage"
+              example:
+                garbage_id: 2
+                collection_id: 1
+                garbage_type: "Glass"
+                quantity_kg: 3.7
+        404:
+          description: Not found
+          content:
+            application/json:
+              example:
+                error: "Not found"
+    delete:
+      summary: Delete a garbage item
+      tags: [Garbage]
+      parameters:
+        - name: garbage_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Deleted
+        404:
+          description: Not found
+          content:
+            application/json:
+              example:
+                error: "Not found"
+
+  /volunteers:
+    get:
+      summary: Get all volunteers
+      tags: [Volunteer]
+      responses:
+        200:
+          description: List of volunteers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VolunteerSafe"
+              example:
+                - volunteer_id: 1
+                  volunteer_name: "Alice"
+                  volunteer_email: "alice@example.com"
+                  role: "attendee"
+                - volunteer_id: 2
+                  volunteer_name: "Bob"
+                  volunteer_email: "bob@example.com"
+                  role: "admin"
+    post:
+      summary: Create a volunteer
+      tags: [Volunteer]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Volunteer"
+            example:
+              volunteer_name: "Charlie"
+              volunteer_email: "charlie@example.com"
+              password: "SuperSecret123"
+              role: "attendee"
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerSafe"
+              example:
+                volunteer_id: 3
+                volunteer_name: "Charlie"
+                volunteer_email: "charlie@example.com"
+                role: "attendee"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: "Missing required fields"
+
+  /volunteers/{volunteer_id}:
+    get:
+      summary: Get volunteer by id
+      tags: [Volunteer]
+      parameters:
+        - name: volunteer_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Volunteer found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerSafe"
+              example:
+                volunteer_id: 2
+                volunteer_name: "Bob"
+                volunteer_email: "bob@example.com"
+                role: "admin"
+        404:
+          description: Not found
+          content:
+            application/json:
+              example:
+                error: "Not found"
+    put:
+      summary: Update a volunteer
+      tags: [Volunteer]
+      parameters:
+        - name: volunteer_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                volunteer_name:
+                  type: string
+                volunteer_email:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+                  enum: [admin, attendee]
+            example:
+              volunteer_name: "Bobby"
+              role: "attendee"
+      responses:
+        200:
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerSafe"
+              example:
+                volunteer_id: 2
+                volunteer_name: "Bobby"
+                volunteer_email: "bob@example.com"
+                role: "attendee"
+        404:
+          description: Not found
+          content:
+            application/json:
+              example:
+                error: "Not found"
+    delete:
+      summary: Delete a volunteer
+      tags: [Volunteer]
+      parameters:
+        - name: volunteer_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Deleted
+        404:
+          description: Not found
+          content:
+            application/json:
+              example:
+                error: "Not found"
+
+  /volunteer_collection:
+    get:
+      summary: Get all volunteer_collection links
+      tags: [VolunteerCollection]
+      responses:
+        200:
+          description: List of volunteer_collections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VolunteerCollection"
+              example:
+                - volunteer_collection_id: 1
+                  volunteer_id: 2
+                  collection_id: 1
+                - volunteer_collection_id: 2
+                  volunteer_id: 3
+                  collection_id: 2
+    post:
+      summary: Create a volunteer_collection link
+      tags: [VolunteerCollection]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                volunteer_id:
+                  type: integer
+                collection_id:
+                  type: integer
+            example:
+              volunteer_id: 3
+              collection_id: 2
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerCollection"
+              example:
+                volunteer_collection_id: 3
+                volunteer_id: 3
+                collection_id: 2
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: "Missing required fields"
+
+  /volunteer_collection/{volunteer_collection_id}:
+    get:
+      summary: Get a volunteer_collection by id
+      tags: [VolunteerCollection]
+      parameters:
+        - name: volunteer_collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: VolunteerCollection found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerCollection"
+              example:
+                volunteer_collection_id: 2
+                volunteer_id: 3
+                collection_id: 2
+        404:
+          description: Not found
+          content:
+            application/json:
+              example:
+                error: "Not found"
+    put:
+      summary: Update a volunteer_collection
+      tags: [VolunteerCollection]
+      parameters:
+        - name: volunteer_collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                volunteer_id:
+                  type: integer
+                collection_id:
+                  type: integer
+            example:
+              volunteer_id: 1
+              collection_id: 2
+      responses:
+        200:
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolunteerCollection"
+              example:
+                volunteer_collection_id: 2
+                volunteer_id: 1
+                collection_id: 2
+        404:
+          description: Not found
+          content:
+            application/json:
+              example:
+                error: "Not found"
+    delete:
+      summary: Delete a volunteer_collection
+      tags: [VolunteerCollection]
+      parameters:
+        - name: volunteer_collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: Deleted
+        404:
+          description: Not found
+          content:
+            application/json:
+              example:
+                error: "Not found"
