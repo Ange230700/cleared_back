@@ -10,21 +10,12 @@ import { DeleteVolunteer } from "~/src/application/useCases/volunteer/DeleteVolu
 import { toJSONSafe } from "~/src/utils/bigint-to-number";
 
 export class VolunteerController {
-  private readonly getAllUseCase = new GetAllVolunteers(
-    new VolunteerRepository(),
-  );
-  private readonly getByIdUseCase = new GetVolunteerById(
-    new VolunteerRepository(),
-  );
-  private readonly createUseCase = new CreateVolunteer(
-    new VolunteerRepository(),
-  );
-  private readonly updateUseCase = new UpdateVolunteer(
-    new VolunteerRepository(),
-  );
-  private readonly deleteUseCase = new DeleteVolunteer(
-    new VolunteerRepository(),
-  );
+  private readonly repo = new VolunteerRepository();
+  private readonly getAllUseCase = new GetAllVolunteers(this.repo);
+  private readonly getByIdUseCase = new GetVolunteerById(this.repo);
+  private readonly createUseCase = new CreateVolunteer(this.repo);
+  private readonly updateUseCase = new UpdateVolunteer(this.repo);
+  private readonly deleteUseCase = new DeleteVolunteer(this.repo);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getAllVolunteers: RequestHandler = async (req, res, next) => {

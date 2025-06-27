@@ -10,21 +10,12 @@ import { CollectionRepository } from "~/src/infrastructure/repositories/Collecti
 import { toJSONSafe } from "~/src/utils/bigint-to-number";
 
 export class CollectionController {
-  private readonly getAllCollectionsUseCase = new GetAllCollections(
-    new CollectionRepository(),
-  );
-  private readonly getCollectionByIdUseCase = new GetCollectionById(
-    new CollectionRepository(),
-  );
-  private readonly createCollectionUseCase = new CreateCollection(
-    new CollectionRepository(),
-  );
-  private readonly updateCollectionUseCase = new UpdateCollection(
-    new CollectionRepository(),
-  );
-  private readonly deleteCollectionUseCase = new DeleteCollection(
-    new CollectionRepository(),
-  );
+  private readonly repo = new CollectionRepository();
+  private readonly getAllCollectionsUseCase = new GetAllCollections(this.repo);
+  private readonly getCollectionByIdUseCase = new GetCollectionById(this.repo);
+  private readonly createCollectionUseCase = new CreateCollection(this.repo);
+  private readonly updateCollectionUseCase = new UpdateCollection(this.repo);
+  private readonly deleteCollectionUseCase = new DeleteCollection(this.repo);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getAllCollections: RequestHandler = async (req, res, next) => {

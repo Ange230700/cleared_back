@@ -10,21 +10,12 @@ import { DeleteVolunteerCollection } from "~/src/application/useCases/volunteerc
 import { toJSONSafe } from "~/src/utils/bigint-to-number";
 
 export class VolunteerCollectionController {
-  private readonly getAllUseCase = new GetAllVolunteerCollections(
-    new VolunteerCollectionRepository(),
-  );
-  private readonly getByIdUseCase = new GetVolunteerCollectionById(
-    new VolunteerCollectionRepository(),
-  );
-  private readonly createUseCase = new CreateVolunteerCollection(
-    new VolunteerCollectionRepository(),
-  );
-  private readonly updateUseCase = new UpdateVolunteerCollection(
-    new VolunteerCollectionRepository(),
-  );
-  private readonly deleteUseCase = new DeleteVolunteerCollection(
-    new VolunteerCollectionRepository(),
-  );
+  private readonly repo = new VolunteerCollectionRepository();
+  private readonly getAllUseCase = new GetAllVolunteerCollections(this.repo);
+  private readonly getByIdUseCase = new GetVolunteerCollectionById(this.repo);
+  private readonly createUseCase = new CreateVolunteerCollection(this.repo);
+  private readonly updateUseCase = new UpdateVolunteerCollection(this.repo);
+  private readonly deleteUseCase = new DeleteVolunteerCollection(this.repo);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getAllVolunteerCollections: RequestHandler = async (req, res, next) => {

@@ -10,11 +10,12 @@ import { DeleteGarbage } from "~/src/application/useCases/garbage/DeleteGarbage"
 import { toJSONSafe } from "~/src/utils/bigint-to-number";
 
 export class GarbageController {
-  private readonly getAllUseCase = new GetAllGarbage(new GarbageRepository());
-  private readonly getByIdUseCase = new GetGarbageById(new GarbageRepository());
-  private readonly createUseCase = new CreateGarbage(new GarbageRepository());
-  private readonly updateUseCase = new UpdateGarbage(new GarbageRepository());
-  private readonly deleteUseCase = new DeleteGarbage(new GarbageRepository());
+  private readonly repo = new GarbageRepository();
+  private readonly getAllUseCase = new GetAllGarbage(this.repo);
+  private readonly getByIdUseCase = new GetGarbageById(this.repo);
+  private readonly createUseCase = new CreateGarbage(this.repo);
+  private readonly updateUseCase = new UpdateGarbage(this.repo);
+  private readonly deleteUseCase = new DeleteGarbage(this.repo);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   getAllGarbage: RequestHandler = async (req, res, next) => {
