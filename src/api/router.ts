@@ -24,7 +24,7 @@ const volunteerController = new VolunteerController();
 const volunteerCollectionController = new VolunteerCollectionController();
 
 // Docs
-router.get("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Authentication routes
 router.post("/auth/register", asyncHandler(authController.register));
