@@ -7,13 +7,14 @@
   "scripts": {
     "test": "cross-env NODE_ENV=test jest --detectOpenHandles",
     "clean": "rm -rf node_modules package-lock.json dist",
+    "postinstall": "npm run prisma:generate",
     "prebuild": "npm run prisma:generate",
     "build": "tsc",
     "postbuild": "npm run prisma:migrate:deploy && npm run prisma:db:seed",
     "dev": "tsx src/api/index.ts",
     "start": "node dist/index.js",
     "prepare": "husky",
-    "lint": "eslint --cache --fix --ext .js,.mjs,.cjs,.ts,.mts,.cts,.json,.jsonc,.json5,.md,.css .",
+    "lint": "eslint --cache --fix --ext .js,.mjs,.cjs,.ts,.mts,.cts,.json,.jsonc,.json5,.css .",
     "commit": "git-cz",
     "commitlint": "commitlint --edit",
     "prisma:generate": "prisma generate",
@@ -82,8 +83,16 @@
     ],
     "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ],
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "useESM": true
+        }
+      ]
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"
@@ -96,7 +105,7 @@
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown",
-    "*.{.js,.mjs,.cjs,.ts,.mts,.cts,.json,.jsonc,.json5,.md,.css}": "npm run lint"
+    "*.{js,mjs,cjs,ts,mts,cts,json,jsonc,json5,css}": "npm run lint"
   },
   "validate-branch-name": {
     "pattern": "^(master|main|develop){1}$|^(feature|fix|hotfix|release)/.+$",

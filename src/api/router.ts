@@ -1,8 +1,9 @@
-// src\api\index.ts
+// src\api\router.ts
 
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
+import path from "path";
 
 import { asyncHandler } from "~/src/api/middlewares/asyncHandler";
 import { AuthenticationController } from "~/src/api/controllers/AuthenticationController";
@@ -12,7 +13,9 @@ import { VolunteerController } from "~/src/api/controllers/VolunteerController";
 import { VolunteerCollectionController } from "~/src/api/controllers/VolunteerCollectionController";
 
 const router = express.Router();
-const swaggerDocument = YAML.load(__dirname + "/swagger.yaml");
+const swaggerDocument = YAML.load(
+  path.resolve(process.cwd(), "src/api/swagger.yaml"),
+);
 
 const authController = new AuthenticationController();
 const collectionController = new CollectionController();
