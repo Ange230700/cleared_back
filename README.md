@@ -25,7 +25,7 @@ A robust, modular backend API for managing environmental cleanup events, volunte
 ## Demo
 
 API documentation and interactive demo available at:
-[http://localhost:3001/api/docs](http://localhost:3001/api/docs) _(local setup required)_
+[https://cleared-back.onrender.com/api/docs](https://cleared-back.onrender.com/api/docs)
 
 ## Tech Stack
 
@@ -43,8 +43,8 @@ API documentation and interactive demo available at:
 **Documentation & Tools:**
 
 - Swagger / OpenAPI (auto-generated docs)
-- Docker (optional, for containerized development)
-- GitHub Actions (CI/CD)
+  <!-- - Docker (optional, for containerized development) -->
+  <!-- - GitHub Actions (CI/CD) -->
 - Commitizen (conventional commits)
 
 ## Getting Started
@@ -165,4 +165,3 @@ MIT License
 Ange KOUAKOU - [your.email@example.com](mailto:your.email@example.com) -->
 
 [Project Link](https://github.com/Ange230700/cleared_back)
-[API link](https://cleared-back-api.herokuapp.com/docs)
