@@ -4,6 +4,7 @@ import { Volunteer } from "~/src/core/entities/Volunteer";
 import { IVolunteerRepository } from "~/src/application/interfaces/IVolunteerRepository";
 import prisma from "~/prisma/lib/client";
 import { Prisma, volunteer_role } from "@prisma/client";
+import argon2 from "argon2";
 
 export class VolunteerRepository implements IVolunteerRepository {
   async getAllVolunteers(): Promise<Volunteer[]> {
@@ -40,11 +41,13 @@ export class VolunteerRepository implements IVolunteerRepository {
     password: string;
     role?: volunteer_role;
   }): Promise<Volunteer> {
+    const hashed = await argon2.hash(data.password);
+
     const created = await prisma.volunteer.create({
       data: {
         volunteer_name: data.volunteer_name,
         volunteer_email: data.volunteer_email,
-        password: data.password,
+        password: hashed,
         role: data.role ?? volunteer_role.attendee,
       },
     });
@@ -67,6 +70,11 @@ export class VolunteerRepository implements IVolunteerRepository {
     },
   ): Promise<Volunteer | null> {
     try {
+      let hashedPassword: string | undefined;
+      if (data.password) {
+        hashedPassword = await argon2.hash(data.password);
+      }
+
       const updated = await prisma.volunteer.update({
         where: { volunteer_id: BigInt(volunteer_id) },
         data: {
@@ -74,7 +82,7 @@ export class VolunteerRepository implements IVolunteerRepository {
           ...(data.volunteer_email && {
             volunteer_email: data.volunteer_email,
           }),
-          ...(data.password && { password: data.password }),
+          ...(data.password && { password: hashedPassword }),
           ...(data.role && { role: data.role }),
         },
       });

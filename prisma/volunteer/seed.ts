@@ -1,5 +1,6 @@
 // prisma\volunteer\seed.ts
 
+import argon2 from "argon2";
 import prisma from "~/prisma/lib/client";
 import { faker } from "@faker-js/faker";
 import deleteSafely from "~/prisma/helpers/deleteSafely";
@@ -14,14 +15,16 @@ async function seedVolunteers(skipCleanup = false) {
     console.log("⚠️ Skipping cleanup (SKIP_CLEANUP=true)");
   }
 
-  const fakeVolunteers = Array.from({ length: NUM_VOLUNTEERS }).map(() => ({
-    volunteer_name: faker.person.fullName(),
-    volunteer_email: faker.internet.email(),
-    password: faker.internet.password({ length: 12 }),
-    role: faker.datatype.boolean({ probability: 0.7 })
-      ? volunteer_role.attendee
-      : volunteer_role.admin,
-  }));
+  const fakeVolunteers = await Promise.all(
+    Array.from({ length: NUM_VOLUNTEERS }).map(async () => ({
+      volunteer_name: faker.person.fullName(),
+      volunteer_email: faker.internet.email(),
+      password: await argon2.hash(faker.internet.password({ length: 12 })), // Hash here!
+      role: faker.datatype.boolean({ probability: 0.7 })
+        ? volunteer_role.attendee
+        : volunteer_role.admin,
+    })),
+  );
 
   await prisma.volunteer.createMany({
     data: fakeVolunteers,
