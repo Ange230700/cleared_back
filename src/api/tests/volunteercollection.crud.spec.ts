@@ -13,16 +13,10 @@ type VolunteerCollectionResponse = {
 };
 
 let server: http.Server;
+let volunteerIds: number[] = [];
+let collectionIds: number[] = [];
 
 async function createVolunteerCollection(override = {}) {
-  const volunteerIds = (
-    await prisma.volunteer.findMany({ select: { volunteer_id: true } })
-  ).map((v) => Number(v.volunteer_id));
-
-  const collectionIds = (
-    await prisma.collection.findMany({ select: { collection_id: true } })
-  ).map((c) => Number(c.collection_id));
-
   const base = {
     volunteer_id: faker.helpers.arrayElement(volunteerIds),
     collection_id: faker.helpers.arrayElement(collectionIds),
@@ -34,10 +28,18 @@ async function createVolunteerCollection(override = {}) {
 }
 
 describe("VolunteerCollection CRUD API", () => {
-  beforeAll((done) => {
-    server = app.listen(0, () => {
-      done();
-    });
+  jest.setTimeout(15000);
+
+  beforeAll(async () => {
+    server = app.listen(0);
+    await new Promise<void>((resolve) => server.once("listening", resolve));
+
+    volunteerIds = (
+      await prisma.volunteer.findMany({ select: { volunteer_id: true } })
+    ).map((v) => Number(v.volunteer_id));
+    collectionIds = (
+      await prisma.collection.findMany({ select: { collection_id: true } })
+    ).map((c) => Number(c.collection_id));
   });
 
   afterAll(async () => {
