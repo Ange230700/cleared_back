@@ -1,6 +1,6 @@
 // src\api\controllers\CollectionController.ts
 
-import { RequestHandler } from "express";
+import { RequestHandler, Request, Response, NextFunction } from "express";
 import { GetAllCollections } from "~/src/application/useCases/collection/GetAllCollections";
 import { GetCollectionById } from "~/src/application/useCases/collection/GetCollectionById";
 import { CreateCollection } from "~/src/application/useCases/collection/CreateCollection";
@@ -8,6 +8,7 @@ import { UpdateCollection } from "~/src/application/useCases/collection/UpdateCo
 import { DeleteCollection } from "~/src/application/useCases/collection/DeleteCollection";
 import { CollectionRepository } from "~/src/infrastructure/repositories/CollectionRepository";
 import { toJSONSafe } from "~/src/utils/bigint-to-number";
+import { sendSuccess, sendError } from "~/src/api/helpers/sendResponse";
 
 export class CollectionController {
   private readonly repo = new CollectionRepository();
@@ -17,84 +18,129 @@ export class CollectionController {
   private readonly updateCollectionUseCase = new UpdateCollection(this.repo);
   private readonly deleteCollectionUseCase = new DeleteCollection(this.repo);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getAllCollections: RequestHandler = async (req, res, next) => {
-    const collections = await this.getAllCollectionsUseCase.execute();
-    res.status(200).json(toJSONSafe(collections));
+  getAllCollections: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const collections = await this.getAllCollectionsUseCase.execute();
+      sendSuccess(res, toJSONSafe(collections), 200);
+    } catch (err) {
+      next(err);
+    }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getCollectionById: RequestHandler = async (req, res, next) => {
+  getCollectionById: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const collection_id = Number(req.params.collection_id);
     if (isNaN(collection_id)) {
-      res.status(400).json({ error: "Invalid collection collection_id" });
+      sendError(res, "Invalid collection collection_id", 400);
       return;
     }
-    const collection =
-      await this.getCollectionByIdUseCase.execute(collection_id);
-    if (!collection) {
-      res.status(404).json({ error: "Collection not found" });
-      return;
+    try {
+      const collection =
+        await this.getCollectionByIdUseCase.execute(collection_id);
+      if (!collection) {
+        sendError(res, "Collection not found", 404);
+        return;
+      }
+      sendSuccess(res, toJSONSafe(collection), 200);
+    } catch (err) {
+      next(err);
     }
-    res.status(200).json(toJSONSafe(collection));
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createCollection: RequestHandler = async (req, res, next) => {
+  createCollection: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const { collection_date, collection_place } = req.body;
     if (!collection_date || !collection_place) {
-      res.status(400).json({
-        error: "Missing 'collection_date' or 'collection_place' in body",
-      });
+      sendError(
+        res,
+        "Missing 'collection_date' or 'collection_place' in body",
+        400,
+      );
       return;
     }
-    const created = await this.createCollectionUseCase.execute({
-      collection_date: new Date(collection_date),
-      collection_place,
-    });
-    res.status(201).json(toJSONSafe(created));
+    try {
+      const created = await this.createCollectionUseCase.execute({
+        collection_date: new Date(collection_date),
+        collection_place,
+      });
+      if (!created) {
+        sendError(res, "Collection already exists", 409);
+        return;
+      }
+      sendSuccess(res, toJSONSafe(created), 201);
+    } catch (err) {
+      next(err);
+    }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  updateCollection: RequestHandler = async (req, res, next) => {
+  updateCollection: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const collection_id = Number(req.params.collection_id);
     const { collection_date, collection_place } = req.body;
     if (isNaN(collection_id)) {
-      res.status(400).json({ error: "Invalid collection collection_id" });
+      sendError(res, "Invalid collection collection_id", 400);
       return;
     }
     if (!collection_date && !collection_place) {
-      res.status(400).json({
-        error:
-          "At least one of 'collection_date' or 'collection_place' must be provided",
-      });
+      sendError(
+        res,
+        "At least one of 'collection_date' or 'collection_place' must be provided",
+        400,
+      );
       return;
     }
-    const updated = await this.updateCollectionUseCase.execute(collection_id, {
-      ...(collection_date && {
-        collection_date: new Date(collection_date),
-      }),
-      ...(collection_place && { collection_place }),
-    });
-    if (!updated) {
-      res.status(404).json({ error: "Collection not found" });
-      return;
+    try {
+      const updated = await this.updateCollectionUseCase.execute(
+        collection_id,
+        {
+          ...(collection_date && {
+            collection_date: new Date(collection_date),
+          }),
+          ...(collection_place && { collection_place }),
+        },
+      );
+      if (!updated) {
+        sendError(res, "Collection not found", 404);
+        return;
+      }
+      sendSuccess(res, toJSONSafe(updated), 200);
+    } catch (err) {
+      next(err);
     }
-    res.status(200).json(toJSONSafe(updated));
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  deleteCollection: RequestHandler = async (req, res, next) => {
+  deleteCollection: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const collection_id = Number(req.params.collection_id);
     if (isNaN(collection_id)) {
-      res.status(400).json({ error: "Invalid collection collection_id" });
+      sendError(res, "Invalid collection collection_id", 400);
       return;
     }
-    const deleted = await this.deleteCollectionUseCase.execute(collection_id);
-    if (!deleted) {
-      res.status(404).json({ error: "Collection not found" });
-      return;
+    try {
+      const deleted = await this.deleteCollectionUseCase.execute(collection_id);
+      if (!deleted) {
+        sendError(res, "Collection not found", 404);
+        return;
+      }
+      sendSuccess(res, null, 200);
+    } catch (err) {
+      next(err);
     }
-    res.status(204).send();
   };
 }

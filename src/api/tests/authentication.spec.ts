@@ -25,8 +25,8 @@ describe("Authentication API", () => {
     const res = await request(app).post(`${ENDPOINT}/register`).send(user);
 
     expect(res.status).toBe(201);
-    expect(res.body.volunteer_id).toBeDefined();
-    expect(res.body.volunteer_email).toBe(user.volunteer_email);
+    expect(res.body.status).toBe("success");
+    expect(res.body.error).toBeNull();
   });
 
   it("should not register with same email", async () => {
@@ -67,8 +67,10 @@ describe("Authentication API", () => {
       .set("Cookie", refreshTokenCookie);
 
     expect(res.status).toBe(200);
-    expect(res.body.accessToken).toBeDefined();
-    expect(res.body.user.volunteer_email).toBe(user.volunteer_email);
+    expect(res.body.status).toBe("success");
+    expect(res.body.data.accessToken).toBeDefined();
+    expect(res.body.data.user.volunteer_email).toBe(user.volunteer_email);
+    expect(res.body.error).toBeNull();
   });
 
   it("should logout and clear refresh token cookie", async () => {

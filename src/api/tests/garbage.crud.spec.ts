@@ -54,18 +54,20 @@ describe("Garbage CRUD API", () => {
       collection_id: Number(randomCollection.collection_id),
     });
     expect(res.status).toBe(201);
-    expect(res.body).toHaveProperty("garbage_id");
-    expect(res.body.collection_id).toBe(Number(randomCollection.collection_id));
-    createdGarbage = res.body;
+    expect(res.body.data).toHaveProperty("garbage_id");
+    expect(res.body.data.collection_id).toBe(
+      Number(randomCollection.collection_id),
+    );
+    createdGarbage = res.body.data;
   });
 
   // Read (GET ALL)
   it("should fetch all garbage", async () => {
     const res = await request(app).get("/api/garbage");
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
+    expect(Array.isArray(res.body.data)).toBe(true);
     expect(
-      res.body.find(
+      res.body.data.find(
         (g: GarbageResponse) => g.garbage_id === createdGarbage.garbage_id,
       ),
     ).toBeTruthy();
@@ -77,7 +79,7 @@ describe("Garbage CRUD API", () => {
       `/api/garbage/${createdGarbage.garbage_id}`,
     );
     expect(res.status).toBe(200);
-    expect(res.body.garbage_id).toBe(createdGarbage.garbage_id);
+    expect(res.body.data.garbage_id).toBe(createdGarbage.garbage_id);
   });
 
   // Update
@@ -97,8 +99,8 @@ describe("Garbage CRUD API", () => {
       .put(`/api/garbage/${createdGarbage.garbage_id}`)
       .send({ garbage_type: newType, quantity_kg: newQuantity });
     expect(res.status).toBe(200);
-    expect(res.body.garbage_type).toBe(newType);
-    expect(res.body.quantity_kg).toBe(newQuantity);
+    expect(res.body.data.garbage_type).toBe(newType);
+    expect(res.body.data.quantity_kg).toBe(newQuantity);
   });
 
   // Delete

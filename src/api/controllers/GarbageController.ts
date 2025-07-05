@@ -1,6 +1,6 @@
 // src/api/controllers/GarbageController.ts
 
-import { RequestHandler } from "express";
+import { RequestHandler, Request, Response, NextFunction } from "express";
 import { GarbageRepository } from "~/src/infrastructure/repositories/GarbageRepository";
 import { GetAllGarbage } from "~/src/application/useCases/garbage/GetAllGarbage";
 import { GetGarbageById } from "~/src/application/useCases/garbage/GetGarbageById";
@@ -8,6 +8,7 @@ import { CreateGarbage } from "~/src/application/useCases/garbage/CreateGarbage"
 import { UpdateGarbage } from "~/src/application/useCases/garbage/UpdateGarbage";
 import { DeleteGarbage } from "~/src/application/useCases/garbage/DeleteGarbage";
 import { toJSONSafe } from "~/src/utils/bigint-to-number";
+import { sendSuccess, sendError } from "~/src/api/helpers/sendResponse";
 
 export class GarbageController {
   private readonly repo = new GarbageRepository();
@@ -17,47 +18,75 @@ export class GarbageController {
   private readonly updateUseCase = new UpdateGarbage(this.repo);
   private readonly deleteUseCase = new DeleteGarbage(this.repo);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getAllGarbage: RequestHandler = async (req, res, next) => {
-    const items = await this.getAllUseCase.execute();
-    res.status(200).json(toJSONSafe(items));
+  getAllGarbage: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const items = await this.getAllUseCase.execute();
+      sendSuccess(res, toJSONSafe(items), 200);
+    } catch (err) {
+      next(err);
+    }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getGarbageById: RequestHandler = async (req, res, next) => {
-    const id = Number(req.params.garbage_id);
-    if (isNaN(id)) {
-      res.status(400).json({ error: "Invalid id" });
+  getGarbageById: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    const garbage_id = Number(req.params.garbage_id);
+    if (isNaN(garbage_id)) {
+      sendError(res, "Invalid id", 400);
       return;
     }
-    const item = await this.getByIdUseCase.execute(id);
-    if (!item) {
-      res.status(404).json({ error: "Not found" });
-      return;
+    try {
+      const item = await this.getByIdUseCase.execute(garbage_id);
+      if (!item) {
+        sendError(res, "Not found", 404);
+        return;
+      }
+      sendSuccess(res, toJSONSafe(item), 200);
+    } catch (err) {
+      next(err);
     }
-    res.status(200).json(toJSONSafe(item));
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createGarbage: RequestHandler = async (req, res, next) => {
+  createGarbage: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const { collection_id, garbage_type, quantity_kg } = req.body;
     if (!garbage_type || typeof quantity_kg !== "number") {
-      res.status(400).json({ error: "Missing required fields" });
+      sendError(res, "Missing required fields", 400);
       return;
     }
-    const item = await this.createUseCase.execute({
-      collection_id,
-      garbage_type,
-      quantity_kg,
-    });
-    res.status(201).json(toJSONSafe(item));
+    try {
+      const created = await this.createUseCase.execute({
+        collection_id,
+        garbage_type,
+        quantity_kg,
+      });
+      if (!created) {
+        sendError(res, "Garbage already exists", 409);
+        return;
+      }
+      sendSuccess(res, toJSONSafe(created), 201);
+    } catch (err) {
+      next(err);
+    }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  updateGarbage: RequestHandler = async (req, res, next) => {
-    const id = Number(req.params.garbage_id);
-    if (isNaN(id)) {
-      res.status(400).json({ error: "Invalid id" });
+  updateGarbage: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    const garbage_id = Number(req.params.garbage_id);
+    if (isNaN(garbage_id)) {
+      sendError(res, "Invalid id", 400);
       return;
     }
     const { collection_id, garbage_type, quantity_kg } = req.body;
@@ -66,33 +95,44 @@ export class GarbageController {
       garbage_type === undefined &&
       quantity_kg === undefined
     ) {
-      res.status(400).json({ error: "No fields to update" });
+      sendError(res, "No fields to update", 400);
       return;
     }
-    const item = await this.updateUseCase.execute(id, {
-      collection_id,
-      garbage_type,
-      quantity_kg,
-    });
-    if (!item) {
-      res.status(404).json({ error: "Not found" });
-      return;
+    try {
+      const updated = await this.updateUseCase.execute(garbage_id, {
+        collection_id,
+        garbage_type,
+        quantity_kg,
+      });
+      if (!updated) {
+        sendError(res, "Not found", 404);
+        return;
+      }
+      sendSuccess(res, toJSONSafe(updated), 200);
+    } catch (err) {
+      next(err);
     }
-    res.status(200).json(toJSONSafe(item));
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  deleteGarbage: RequestHandler = async (req, res, next) => {
-    const id = Number(req.params.garbage_id);
-    if (isNaN(id)) {
-      res.status(400).json({ error: "Invalid id" });
+  deleteGarbage: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    const garbage_id = Number(req.params.garbage_id);
+    if (isNaN(garbage_id)) {
+      sendError(res, "Invalid id", 400);
       return;
     }
-    const deleted = await this.deleteUseCase.execute(id);
-    if (!deleted) {
-      res.status(404).json({ error: "Not found" });
-      return;
+    try {
+      const deleted = await this.deleteUseCase.execute(garbage_id);
+      if (!deleted) {
+        sendError(res, "Not found", 404);
+        return;
+      }
+      sendSuccess(res, null, 204);
+    } catch (err) {
+      next(err);
     }
-    res.status(204).send();
   };
 }

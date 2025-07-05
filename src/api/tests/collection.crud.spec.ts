@@ -41,18 +41,18 @@ describe("Collection CRUD API", () => {
     const randomPlace = faker.location.city();
     const res = await createCollection({ collection_place: randomPlace });
     expect(res.status).toBe(201);
-    expect(res.body).toHaveProperty("collection_id");
-    expect(res.body.collection_place).toBe(randomPlace);
-    createdCollection = res.body;
+    expect(res.body.data).toHaveProperty("collection_id");
+    expect(res.body.data.collection_place).toBe(randomPlace);
+    createdCollection = res.body.data;
   });
 
   // Read (GET ALL)
   it("should fetch all collections", async () => {
     const res = await request(app).get("/api/collections");
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
+    expect(Array.isArray(res.body.data)).toBe(true);
     expect(
-      res.body.find(
+      res.body.data.find(
         (c: CollectionResponse) =>
           c.collection_id === createdCollection.collection_id,
       ),
@@ -65,7 +65,7 @@ describe("Collection CRUD API", () => {
       `/api/collections/${createdCollection.collection_id}`,
     );
     expect(res.status).toBe(200);
-    expect(res.body.collection_id).toBe(createdCollection.collection_id);
+    expect(res.body.data.collection_id).toBe(createdCollection.collection_id);
   });
 
   // Update
@@ -75,7 +75,7 @@ describe("Collection CRUD API", () => {
       .put(`/api/collections/${createdCollection.collection_id}`)
       .send({ collection_place: newPlace });
     expect(res.status).toBe(200);
-    expect(res.body.collection_place).toBe(newPlace);
+    expect(res.body.data.collection_place).toBe(newPlace);
   });
 
   // Delete
@@ -83,7 +83,10 @@ describe("Collection CRUD API", () => {
     const res = await request(app).delete(
       `/api/collections/${createdCollection.collection_id}`,
     );
-    expect(res.status).toBe(204);
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe("success");
+    expect(res.body.data).toBeNull();
+    expect(res.body.error).toBeNull();
   });
 
   // Confirm deletion

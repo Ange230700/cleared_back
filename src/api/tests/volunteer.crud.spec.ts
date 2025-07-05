@@ -43,19 +43,19 @@ describe("Volunteer CRUD API", () => {
       volunteer_email: randomEmail,
     });
     expect(res.status).toBe(201);
-    expect(res.body).toHaveProperty("volunteer_id");
-    expect(res.body.volunteer_name).toBe(randomName);
-    expect(res.body.volunteer_email).toBe(randomEmail);
-    createdVolunteer = res.body;
+    expect(res.body.data).toHaveProperty("volunteer_id");
+    expect(res.body.data.volunteer_name).toBe(randomName);
+    expect(res.body.data.volunteer_email).toBe(randomEmail);
+    createdVolunteer = res.body.data;
   });
 
   // Read (GET ALL)
   it("should fetch all volunteers", async () => {
     const res = await request(app).get("/api/volunteers");
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
+    expect(Array.isArray(res.body.data)).toBe(true);
     expect(
-      res.body.find(
+      res.body.data.find(
         (v: VolunteerResponse) =>
           v.volunteer_id === createdVolunteer.volunteer_id,
       ),
@@ -68,7 +68,7 @@ describe("Volunteer CRUD API", () => {
       `/api/volunteers/${createdVolunteer.volunteer_id}`,
     );
     expect(res.status).toBe(200);
-    expect(res.body.volunteer_id).toBe(createdVolunteer.volunteer_id);
+    expect(res.body.data.volunteer_id).toBe(createdVolunteer.volunteer_id);
   });
 
   // Update
@@ -78,7 +78,7 @@ describe("Volunteer CRUD API", () => {
       .put(`/api/volunteers/${createdVolunteer.volunteer_id}`)
       .send({ volunteer_name: newName });
     expect(res.status).toBe(200);
-    expect(res.body.volunteer_name).toBe(newName);
+    expect(res.body.data.volunteer_name).toBe(newName);
   });
 
   // Delete

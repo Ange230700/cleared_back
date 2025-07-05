@@ -62,19 +62,23 @@ describe("VolunteerCollection CRUD API", () => {
       collection_id: Number(randomCollection.collection_id),
     });
     expect(res.status).toBe(201);
-    expect(res.body).toHaveProperty("volunteer_collection_id");
-    expect(res.body.volunteer_id).toBe(Number(randomVolunteer.volunteer_id));
-    expect(res.body.collection_id).toBe(Number(randomCollection.collection_id));
-    createdVolunteerCollection = res.body;
+    expect(res.body.data).toHaveProperty("volunteer_collection_id");
+    expect(res.body.data.volunteer_id).toBe(
+      Number(randomVolunteer.volunteer_id),
+    );
+    expect(res.body.data.collection_id).toBe(
+      Number(randomCollection.collection_id),
+    );
+    createdVolunteerCollection = res.body.data;
   });
 
   // Read (GET ALL)
   it("should fetch all volunteer_collections", async () => {
     const res = await request(server).get("/api/volunteer_collection");
     expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
+    expect(Array.isArray(res.body.data)).toBe(true);
     expect(
-      res.body.find(
+      res.body.data.find(
         (vc: VolunteerCollectionResponse) =>
           vc.volunteer_collection_id ===
           createdVolunteerCollection.volunteer_collection_id,
@@ -88,7 +92,7 @@ describe("VolunteerCollection CRUD API", () => {
       `/api/volunteer_collection/${createdVolunteerCollection.volunteer_collection_id}`,
     );
     expect(res.status).toBe(200);
-    expect(res.body.volunteer_collection_id).toBe(
+    expect(res.body.data.volunteer_collection_id).toBe(
       createdVolunteerCollection.volunteer_collection_id,
     );
   });
@@ -110,8 +114,10 @@ describe("VolunteerCollection CRUD API", () => {
         collection_id: Number(newCollection.collection_id),
       });
     expect(res.status).toBe(200);
-    expect(res.body.volunteer_id).toBe(Number(newVolunteer.volunteer_id));
-    expect(res.body.collection_id).toBe(Number(newCollection.collection_id));
+    expect(res.body.data.volunteer_id).toBe(Number(newVolunteer.volunteer_id));
+    expect(res.body.data.collection_id).toBe(
+      Number(newCollection.collection_id),
+    );
   });
 
   // Delete

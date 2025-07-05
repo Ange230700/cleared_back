@@ -1,6 +1,6 @@
 // src\api\controllers\VolunteerController.ts
 
-import { RequestHandler } from "express";
+import { RequestHandler, Request, Response, NextFunction } from "express";
 import { VolunteerRepository } from "~/src/infrastructure/repositories/VolunteerRepository";
 import { GetAllVolunteers } from "~/src/application/useCases/volunteer/GetAllVolunteers";
 import { GetVolunteerById } from "~/src/application/useCases/volunteer/GetVolunteerById";
@@ -8,6 +8,7 @@ import { CreateVolunteer } from "~/src/application/useCases/volunteer/CreateVolu
 import { UpdateVolunteer } from "~/src/application/useCases/volunteer/UpdateVolunteer";
 import { DeleteVolunteer } from "~/src/application/useCases/volunteer/DeleteVolunteer";
 import { toJSONSafe } from "~/src/utils/bigint-to-number";
+import { sendSuccess, sendError } from "~/src/api/helpers/sendResponse";
 
 export class VolunteerController {
   private readonly repo = new VolunteerRepository();
@@ -17,48 +18,76 @@ export class VolunteerController {
   private readonly updateUseCase = new UpdateVolunteer(this.repo);
   private readonly deleteUseCase = new DeleteVolunteer(this.repo);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getAllVolunteers: RequestHandler = async (req, res, next) => {
-    const items = await this.getAllUseCase.execute();
-    res.status(200).json(toJSONSafe(items));
+  getAllVolunteers: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
+    try {
+      const items = await this.getAllUseCase.execute();
+      sendSuccess(res, toJSONSafe(items), 200);
+    } catch (err) {
+      next(err);
+    }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  getVolunteerById: RequestHandler = async (req, res, next) => {
+  getVolunteerById: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const volunteer_id = Number(req.params.volunteer_id);
     if (isNaN(volunteer_id)) {
-      res.status(400).json({ error: "Invalid id" });
+      sendError(res, "Invalid id", 400);
       return;
     }
-    const item = await this.getByIdUseCase.execute(volunteer_id);
-    if (!item) {
-      res.status(404).json({ error: "Not found" });
-      return;
+    try {
+      const item = await this.getByIdUseCase.execute(volunteer_id);
+      if (!item) {
+        sendError(res, "Not found", 404);
+        return;
+      }
+      sendSuccess(res, toJSONSafe(item), 200);
+    } catch (err) {
+      next(err);
     }
-    res.status(200).json(toJSONSafe(item));
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createVolunteer: RequestHandler = async (req, res, next) => {
+  createVolunteer: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const { volunteer_name, volunteer_email, password, role } = req.body;
     if (!volunteer_name || !volunteer_email || !password) {
-      res.status(400).json({ error: "Missing required fields" });
+      sendError(res, "Missing required fields", 400);
       return;
     }
-    const item = await this.createUseCase.execute({
-      volunteer_name,
-      volunteer_email,
-      password,
-      role,
-    });
-    res.status(201).json(toJSONSafe(item));
+    try {
+      const created = await this.createUseCase.execute({
+        volunteer_name,
+        volunteer_email,
+        password,
+        role,
+      });
+      if (!created) {
+        sendError(res, "Volunteer already exists", 409);
+        return;
+      }
+      sendSuccess(res, toJSONSafe(created), 201);
+    } catch (err) {
+      next(err);
+    }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  updateVolunteer: RequestHandler = async (req, res, next) => {
+  updateVolunteer: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const volunteer_id = Number(req.params.volunteer_id);
     if (isNaN(volunteer_id)) {
-      res.status(400).json({ error: "Invalid id" });
+      sendError(res, "Invalid id", 400);
       return;
     }
     const { volunteer_name, volunteer_email, password, role } = req.body;
@@ -68,34 +97,45 @@ export class VolunteerController {
       password === undefined &&
       role === undefined
     ) {
-      res.status(400).json({ error: "No fields to update" });
+      sendError(res, "No fields to update", 400);
       return;
     }
-    const item = await this.updateUseCase.execute(volunteer_id, {
-      volunteer_name,
-      volunteer_email,
-      password,
-      role,
-    });
-    if (!item) {
-      res.status(404).json({ error: "Not found" });
-      return;
+    try {
+      const updated = await this.updateUseCase.execute(volunteer_id, {
+        volunteer_name,
+        volunteer_email,
+        password,
+        role,
+      });
+      if (!updated) {
+        sendError(res, "Not found", 404);
+        return;
+      }
+      sendSuccess(res, toJSONSafe(updated), 200);
+    } catch (err) {
+      next(err);
     }
-    res.status(200).json(toJSONSafe(item));
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  deleteVolunteer: RequestHandler = async (req, res, next) => {
+  deleteVolunteer: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const volunteer_id = Number(req.params.volunteer_id);
     if (isNaN(volunteer_id)) {
-      res.status(400).json({ error: "Invalid id" });
+      sendError(res, "Invalid id", 400);
       return;
     }
-    const deleted = await this.deleteUseCase.execute(volunteer_id);
-    if (!deleted) {
-      res.status(404).json({ error: "Not found" });
-      return;
+    try {
+      const deleted = await this.deleteUseCase.execute(volunteer_id);
+      if (!deleted) {
+        sendError(res, "Not found", 404);
+        return;
+      }
+      sendSuccess(res, null, 204);
+    } catch (err) {
+      next(err);
     }
-    res.status(204).send();
   };
 }

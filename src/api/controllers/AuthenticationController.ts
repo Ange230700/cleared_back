@@ -1,6 +1,6 @@
 // src\api\controllers\AuthenticationController.ts
 
-import { RequestHandler } from "express";
+import { RequestHandler, Request, Response, NextFunction } from "express";
 import { AuthenticationRepository } from "~/src/infrastructure/repositories/AuthenticationRepository";
 import { Register } from "~/src/application/useCases/authentication/Register";
 import { Login } from "~/src/application/useCases/authentication/Login";
@@ -9,6 +9,7 @@ import { Logout } from "~/src/application/useCases/authentication/Logout";
 import { toJSONSafe } from "~/src/utils/bigint-to-number";
 import { signAccessToken } from "~/src/utils/jwt";
 import crypto from "crypto";
+import { sendSuccess, sendError } from "~/src/api/helpers/sendResponse";
 
 export class AuthenticationController {
   private readonly repo = new AuthenticationRepository();
@@ -18,104 +19,142 @@ export class AuthenticationController {
   private readonly logoutUseCase = new Logout(this.repo);
 
   /** POST /auth/register */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  register: RequestHandler = async (req, res, next) => {
+  register: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const { volunteer_name, volunteer_email, password, role } = req.body;
     if (!volunteer_name || !volunteer_email || !password) {
-      res.status(400).json({ error: "Missing fields" });
+      sendError(res, "Missing fields", 400);
       return;
     }
-    const user = await this.registerUseCase.execute({
-      volunteer_name,
-      volunteer_email,
-      password,
-      role,
-    });
-    res.status(201).json(toJSONSafe(user));
+    try {
+      const registered = await this.registerUseCase.execute({
+        volunteer_name,
+        volunteer_email,
+        password,
+        role,
+      });
+      if (!registered) {
+        sendError(res, "User already exists", 409);
+        return;
+      }
+      sendSuccess(res, toJSONSafe(registered), 201);
+    } catch (err) {
+      next(err);
+    }
   };
 
   /** POST /auth/login */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  login: RequestHandler = async (req, res, next) => {
+  login: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const { volunteer_email, password } = req.body;
     if (!volunteer_email || !password) {
-      res.status(400).json({ error: "Missing credentials" });
+      sendError(res, "Missing credentials", 400);
       return;
     }
-    const user = await this.loginUseCase.execute({
-      volunteer_email,
-      password,
-    });
-    if (!user) {
-      res.status(401).json({ error: "Invalid credentials" });
-      return;
+    try {
+      const user = await this.loginUseCase.execute({
+        volunteer_email,
+        password,
+      });
+
+      if (!user) {
+        sendError(res, "Invalid credentials", 401);
+        return;
+      }
+
+      const expiresIn = process.env.ACCESS_TOKEN_EXPIRES_IN ?? "1h";
+      const refreshTokenExpiresInDaysStr =
+        process.env.REFRESH_TOKEN_EXPIRES_IN_DAYS ?? "7d";
+      const refreshTokenExpiresInDays = refreshTokenExpiresInDaysStr
+        ? parseInt(refreshTokenExpiresInDaysStr, 10)
+        : 7;
+
+      const accessToken = signAccessToken(
+        { volunteer_id: user.volunteer_id, role: user.role },
+        expiresIn,
+      );
+
+      const refreshToken = crypto.randomUUID();
+      const expiresAt = new Date(
+        Date.now() + refreshTokenExpiresInDays * 86400 * 1000,
+      );
+      await this.repo.storeRefreshToken({
+        volunteer_id: user.volunteer_id,
+        refreshToken,
+        expiresAt,
+      });
+
+      res
+        .cookie("refresh_token", refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "prod",
+          sameSite: "lax",
+          expires: expiresAt,
+        })
+        .json({ accessToken, user: toJSONSafe(user) });
+
+      sendSuccess(res, { accessToken, user: toJSONSafe(user) }, 200);
+    } catch (err) {
+      next(err);
     }
-
-    const expiresIn = process.env.ACCESS_TOKEN_EXPIRES_IN ?? "1h";
-    const refreshTokenExpiresInDaysStr =
-      process.env.REFRESH_TOKEN_EXPIRES_IN_DAYS ?? "7d";
-    const refreshTokenExpiresInDays = refreshTokenExpiresInDaysStr
-      ? parseInt(refreshTokenExpiresInDaysStr, 10)
-      : 7;
-
-    const accessToken = signAccessToken(
-      { volunteer_id: user.volunteer_id, role: user.role },
-      expiresIn,
-    );
-
-    const refreshToken = crypto.randomUUID();
-    const expiresAt = new Date(
-      Date.now() + refreshTokenExpiresInDays * 86400 * 1000,
-    );
-    await this.repo.storeRefreshToken({
-      volunteer_id: user.volunteer_id,
-      refreshToken,
-      expiresAt,
-    });
-
-    res
-      .cookie("refresh_token", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "prod",
-        sameSite: "lax",
-        expires: expiresAt,
-      })
-      .json({ accessToken, user: toJSONSafe(user) });
   };
 
   /** POST /auth/refresh */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  refresh: RequestHandler = async (req, res, next) => {
+  refresh: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const refreshToken = req.cookies.refresh_token;
     if (!refreshToken) {
-      res.status(401).json({ error: "Missing refresh token" });
-      return;
-    }
-    const user = await this.refreshUseCase.execute(refreshToken);
-    if (!user) {
-      res.status(401).json({ error: "Invalid refresh token" });
+      sendError(res, "Missing refresh token", 401);
       return;
     }
 
-    const expiresIn = process.env.ACCESS_TOKEN_EXPIRES_IN ?? "1h";
+    try {
+      const user = await this.refreshUseCase.execute(refreshToken);
+      if (!user) {
+        sendError(res, "Invalid refresh token", 401);
+        return;
+      }
 
-    const accessToken = signAccessToken(
-      { volunteer_id: user.volunteer_id, role: user.role },
-      expiresIn,
-    );
+      const expiresIn = process.env.ACCESS_TOKEN_EXPIRES_IN ?? "1h";
 
-    res.json({ accessToken, user: toJSONSafe(user) });
+      const accessToken = signAccessToken(
+        { volunteer_id: user.volunteer_id, role: user.role },
+        expiresIn,
+      );
+
+      sendSuccess(res, { accessToken, user: toJSONSafe(user) }, 200);
+    } catch (err) {
+      next(err);
+    }
   };
 
   /** POST /auth/logout */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  logout: RequestHandler = async (req, res, next) => {
+  logout: RequestHandler = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) => {
     const refreshToken = req.cookies.refresh_token;
     if (!refreshToken) {
-      res.status(204).send();
+      sendSuccess(res, null, 204);
       return;
     }
-    await this.logoutUseCase.execute(refreshToken);
-    res.clearCookie("refresh_token").status(204).send();
+
+    try {
+      await this.logoutUseCase.execute(refreshToken);
+      res.clearCookie("refresh_token");
+      sendSuccess(res, null, 204);
+    } catch (err) {
+      next(err);
+    }
   };
 }

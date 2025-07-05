@@ -6,6 +6,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import router from "~/src/api/router";
+import { sendError } from "~/src/api/helpers/sendResponse";
 
 const app = express();
 
@@ -32,8 +33,6 @@ app.use(cookieParser());
 
 app.use("/api", router);
 
-// app.use(express.static("../../public/"));
-
 /* ************************************************************************* */
 
 // Middleware for Error Logging (Uncomment to enable)
@@ -43,11 +42,10 @@ const logErrors = (
   err: Error,
   req: Request,
   res: Response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   next: NextFunction,
 ) => {
-  console.error(err);
-  console.error("on req:", req.method, req.path);
-  next(err);
+  sendError(res, err.message || "Internal Server Error", 500, err);
 };
 
 // Mount the logErrors middleware globally
