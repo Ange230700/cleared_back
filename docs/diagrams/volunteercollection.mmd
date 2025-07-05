@@ -1,0 +1,77 @@
+%% docs\diagrams\volunteercollection.mmd
+
+classDiagram
+    class VolunteerCollection {
+        + volunteer_collection_id: number
+        + volunteer_id: number or null
+        + collection_id: number or null
+    }
+
+    class VolunteerCollectionController {
+        - repo: VolunteerCollectionRepository
+        - getAllUseCase: GetAllVolunteerCollections
+        - getByIdUseCase: GetVolunteerCollectionById
+        - createUseCase: CreateVolunteerCollection
+        - updateUseCase: UpdateVolunteerCollection
+        - deleteUseCase: DeleteVolunteerCollection
+        + getAllVolunteerCollections(req, res, next)
+        + getVolunteerCollectionById(req, res, next)
+        + createVolunteerCollection(req, res, next)
+        + updateVolunteerCollection(req, res, next)
+        + deleteVolunteerCollection(req, res, next)
+    }
+
+    class GetAllVolunteerCollections {
+        - repo: IVolunteerCollectionRepository
+        + execute(): VolunteerCollection[]
+    }
+
+    class GetVolunteerCollectionById {
+        - repo: IVolunteerCollectionRepository
+        + execute(volunteer_collection_id: number): VolunteerCollection or null
+    }
+
+    class CreateVolunteerCollection {
+        - repo: IVolunteerCollectionRepository
+        + execute(data): VolunteerCollection
+    }
+
+    class UpdateVolunteerCollection {
+        - repo: IVolunteerCollectionRepository
+        + execute(volunteer_collection_id: number, data): VolunteerCollection or null
+    }
+
+    class DeleteVolunteerCollection {
+        - repo: IVolunteerCollectionRepository
+        + execute(volunteer_collection_id: number): boolean
+    }
+
+    class IVolunteerCollectionRepository {
+        <<interface>>
+        + getAllVolunteerCollections(): VolunteerCollection[]
+        + getVolunteerCollectionById(volunteer_collection_id: number): VolunteerCollection or null
+        + createVolunteerCollection(data): VolunteerCollection
+        + updateVolunteerCollection(volunteer_collection_id: number, data): VolunteerCollection or null
+        + deleteVolunteerCollection(volunteer_collection_id: number): boolean
+    }
+
+    class VolunteerCollectionRepository {
+        + getAllVolunteerCollections(): VolunteerCollection[]
+        + getVolunteerCollectionById(volunteer_collection_id: number): VolunteerCollection or null
+        + createVolunteerCollection(data): VolunteerCollection
+        + updateVolunteerCollection(volunteer_collection_id: number, data): VolunteerCollection or null
+        + deleteVolunteerCollection(volunteer_collection_id: number): boolean
+    }
+
+    IVolunteerCollectionRepository <|.. VolunteerCollectionRepository : implements
+    VolunteerCollectionController --> GetAllVolunteerCollections : "fetches all"
+    VolunteerCollectionController --> GetVolunteerCollectionById : "fetches by id"
+    VolunteerCollectionController --> CreateVolunteerCollection : "creates"
+    VolunteerCollectionController --> UpdateVolunteerCollection : "updates"
+    VolunteerCollectionController --> DeleteVolunteerCollection : "deletes"
+    VolunteerCollectionController --> VolunteerCollectionRepository : "uses repository"
+    GetAllVolunteerCollections ..> IVolunteerCollectionRepository : "calls"
+    GetVolunteerCollectionById ..> IVolunteerCollectionRepository : "calls"
+    CreateVolunteerCollection ..> IVolunteerCollectionRepository : "calls"
+    UpdateVolunteerCollection ..> IVolunteerCollectionRepository : "calls"
+    DeleteVolunteerCollection ..> IVolunteerCollectionRepository : "calls"
