@@ -1,0 +1,79 @@
+%% docs\diagrams\volunteer.mmd
+
+classDiagram
+    class Volunteer {
+        + volunteer_id: number
+        + volunteer_name: string
+        + volunteer_email: string
+        + password: string
+        + role: volunteer_role
+    }
+
+    class VolunteerController {
+        - repo: VolunteerRepository
+        - getAllUseCase: GetAllVolunteers
+        - getByIdUseCase: GetVolunteerById
+        - createUseCase: CreateVolunteer
+        - updateUseCase: UpdateVolunteer
+        - deleteUseCase: DeleteVolunteer
+        + getAllVolunteers(req, res, next)
+        + getVolunteerById(req, res, next)
+        + createVolunteer(req, res, next)
+        + updateVolunteer(req, res, next)
+        + deleteVolunteer(req, res, next)
+    }
+
+    class GetAllVolunteers {
+        - repo: IVolunteerRepository
+        + execute(): Volunteer[]
+    }
+
+    class GetVolunteerById {
+        - repo: IVolunteerRepository
+        + execute(volunteer_id: number): Volunteer or null
+    }
+
+    class CreateVolunteer {
+        - repo: IVolunteerRepository
+        + execute(data): Volunteer
+    }
+
+    class UpdateVolunteer {
+        - repo: IVolunteerRepository
+        + execute(volunteer_id: number, data): Volunteer or null
+    }
+
+    class DeleteVolunteer {
+        - repo: IVolunteerRepository
+        + execute(volunteer_id: number): boolean
+    }
+
+    class IVolunteerRepository {
+        <<interface>>
+        + getAllVolunteers(): Volunteer[]
+        + getVolunteerById(volunteer_id: number): Volunteer or null
+        + createVolunteer(data): Volunteer
+        + updateVolunteer(volunteer_id: number, data): Volunteer or null
+        + deleteVolunteer(volunteer_id: number): boolean
+    }
+
+    class VolunteerRepository {
+        + getAllVolunteers(): Volunteer[]
+        + getVolunteerById(volunteer_id: number): Volunteer or null
+        + createVolunteer(data): Volunteer
+        + updateVolunteer(volunteer_id: number, data): Volunteer or null
+        + deleteVolunteer(volunteer_id: number): boolean
+    }
+
+    IVolunteerRepository <|.. VolunteerRepository : implements
+    VolunteerController --> GetAllVolunteers : "fetches all"
+    VolunteerController --> GetVolunteerById : "fetches by id"
+    VolunteerController --> CreateVolunteer : "creates"
+    VolunteerController --> UpdateVolunteer : "updates"
+    VolunteerController --> DeleteVolunteer : "deletes"
+    VolunteerController --> VolunteerRepository : "uses repository"
+    GetAllVolunteers ..> IVolunteerRepository : "calls"
+    GetVolunteerById ..> IVolunteerRepository : "calls"
+    CreateVolunteer ..> IVolunteerRepository : "calls"
+    UpdateVolunteer ..> IVolunteerRepository : "calls"
+    DeleteVolunteer ..> IVolunteerRepository : "calls"
