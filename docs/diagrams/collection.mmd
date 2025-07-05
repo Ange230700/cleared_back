@@ -1,0 +1,77 @@
+%% docs/diagrams/collection.mmd
+
+classDiagram
+    class Collection {
+        + collection_id: number
+        + collection_date: Date
+        + collection_place: string
+    }
+
+    class CollectionController {
+        - repo: CollectionRepository
+        - getAllCollectionsUseCase: GetAllCollections
+        - getCollectionByIdUseCase: GetCollectionById
+        - createCollectionUseCase: CreateCollection
+        - updateCollectionUseCase: UpdateCollection
+        - deleteCollectionUseCase: DeleteCollection
+        + getAllCollections(req, res, next)
+        + getCollectionById(req, res, next)
+        + createCollection(req, res, next)
+        + updateCollection(req, res, next)
+        + deleteCollection(req, res, next)
+    }
+
+    class GetAllCollections {
+        - collectionRepository: ICollectionRepository
+        + execute(): Collection[]
+    }
+
+    class GetCollectionById {
+        - collectionRepository: ICollectionRepository
+        + execute(collection_id: number): Collection or null
+    }
+
+    class CreateCollection {
+        - collectionRepository: ICollectionRepository
+        + execute(data): Collection
+    }
+
+    class UpdateCollection {
+        - collectionRepository: ICollectionRepository
+        + execute(collection_id: number, data): Collection or null
+    }
+
+    class DeleteCollection {
+        - collectionRepository: ICollectionRepository
+        + execute(collection_id: number): boolean
+    }
+
+    class ICollectionRepository {
+        <<interface>>
+        + getAllCollections(): Collection[]
+        + getCollectionById(collection_id: number): Collection or null
+        + createCollection(data): Collection
+        + updateCollection(collection_id: number, data): Collection or null
+        + deleteCollection(collection_id: number): boolean
+    }
+
+    class CollectionRepository {
+        + getAllCollections(): Collection[]
+        + getCollectionById(collection_id: number): Collection or null
+        + createCollection(data): Collection
+        + updateCollection(collection_id: number, data): Collection or null
+        + deleteCollection(collection_id: number): boolean
+    }
+
+    ICollectionRepository <|.. CollectionRepository : implements
+    CollectionController --> GetAllCollections : "fetches all"
+    CollectionController --> GetCollectionById : "fetches by id"
+    CollectionController --> CreateCollection : "creates"
+    CollectionController --> UpdateCollection : "updates"
+    CollectionController --> DeleteCollection : "deletes"
+    CollectionController --> CollectionRepository : "uses repository"
+    GetAllCollections ..> ICollectionRepository : "calls"
+    GetCollectionById ..> ICollectionRepository : "calls"
+    CreateCollection ..> ICollectionRepository : "calls"
+    UpdateCollection ..> ICollectionRepository : "calls"
+    DeleteCollection ..> ICollectionRepository : "calls"
