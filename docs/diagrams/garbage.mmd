@@ -1,0 +1,78 @@
+%% docs\diagrams\garbage.mmd
+
+classDiagram
+    class Garbage {
+        + garbage_id: number
+        + collection_id: number or null
+        + garbage_type: string
+        + quantity_kg: number
+    }
+
+    class GarbageController {
+        - repo: GarbageRepository
+        - getAllUseCase: GetAllGarbage
+        - getByIdUseCase: GetGarbageById
+        - createUseCase: CreateGarbage
+        - updateUseCase: UpdateGarbage
+        - deleteUseCase: DeleteGarbage
+        + getAllGarbage(req, res, next)
+        + getGarbageById(req, res, next)
+        + createGarbage(req, res, next)
+        + updateGarbage(req, res, next)
+        + deleteGarbage(req, res, next)
+    }
+
+    class GetAllGarbage {
+        - repo: IGarbageRepository
+        + execute(): Garbage[]
+    }
+
+    class GetGarbageById {
+        - repo: IGarbageRepository
+        + execute(garbage_id: number): Garbage or null
+    }
+
+    class CreateGarbage {
+        - repo: IGarbageRepository
+        + execute(data): Garbage
+    }
+
+    class UpdateGarbage {
+        - repo: IGarbageRepository
+        + execute(garbage_id: number, data): Garbage or null
+    }
+
+    class DeleteGarbage {
+        - repo: IGarbageRepository
+        + execute(garbage_id: number): boolean
+    }
+
+    class IGarbageRepository {
+        <<interface>>
+        + getAllGarbage(): Garbage[]
+        + getGarbageById(garbage_id: number): Garbage or null
+        + createGarbage(data): Garbage
+        + updateGarbage(garbage_id: number, data): Garbage or null
+        + deleteGarbage(garbage_id: number): boolean
+    }
+
+    class GarbageRepository {
+        + getAllGarbage(): Garbage[]
+        + getGarbageById(garbage_id: number): Garbage or null
+        + createGarbage(data): Garbage
+        + updateGarbage(garbage_id: number, data): Garbage or null
+        + deleteGarbage(garbage_id: number): boolean
+    }
+
+    IGarbageRepository <|.. GarbageRepository : implements
+    GarbageController --> GetAllGarbage : "fetches all"
+    GarbageController --> GetGarbageById : "fetches by id"
+    GarbageController --> CreateGarbage : "creates"
+    GarbageController --> UpdateGarbage : "updates"
+    GarbageController --> DeleteGarbage : "deletes"
+    GarbageController --> GarbageRepository : "uses repository"
+    GetAllGarbage ..> IGarbageRepository : "calls"
+    GetGarbageById ..> IGarbageRepository : "calls"
+    CreateGarbage ..> IGarbageRepository : "calls"
+    UpdateGarbage ..> IGarbageRepository : "calls"
+    DeleteGarbage ..> IGarbageRepository : "calls"
