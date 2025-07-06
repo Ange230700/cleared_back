@@ -118,242 +118,256 @@ components:
           type: integer
           nullable: true
 
+    Session:
+      type: object
+      properties:
+        token_id:
+          type: string
+        volunteer_id:
+          type: integer
+        issued_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+
 paths:
   /auth/register:
-  post:
-    summary: Register a new volunteer
-    tags: [Authentication]
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              volunteer_name:
-                type: string
-              volunteer_email:
-                type: string
-              password:
-                type: string
-              role:
-                type: string
-                enum: [admin, attendee]
-          example:
-            volunteer_name: "John Doe"
-            volunteer_email: "john@example.com"
-            password: "SecurePass123!"
-            role: "attendee"
-    responses:
-      201:
-        description: Volunteer registered
+    post:
+      summary: Register a new volunteer
+      tags: [Authentication]
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: "#/components/schemas/ApiResponseSuccess"
-                - type: object
-                  properties:
-                    data:
-                      $ref: "#/components/schemas/VolunteerSafe"
+              type: object
+              properties:
+                volunteer_name:
+                  type: string
+                volunteer_email:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+                  enum: [admin, attendee]
             example:
-              status: "success"
-              data:
-                volunteer_id: 1
-                volunteer_name: "John Doe"
-                volunteer_email: "john@example.com"
-                role: "attendee"
-              error: null
-      400:
-        description: Bad Request
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Missing fields"
-                details: null
-      500:
-        description: Internal Server Error
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Failed to register"
-                details: null
-
-/auth/login:
-  post:
-    summary: Login as volunteer
-    tags: [Authentication]
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              volunteer_email:
-                type: string
-              password:
-                type: string
-          example:
-            volunteer_email: "john@example.com"
-            password: "SecurePass123!"
-    responses:
-      200:
-        description: Successful login
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: "#/components/schemas/ApiResponseSuccess"
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        accessToken:
-                          type: string
-                        user:
-                          $ref: "#/components/schemas/VolunteerSafe"
-            example:
-              status: "success"
-              data:
-                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
-                user:
+              volunteer_name: "John Doe"
+              volunteer_email: "john@example.com"
+              password: "SecurePass123!"
+              role: "attendee"
+      responses:
+        201:
+          description: Volunteer registered
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/VolunteerSafe"
+              example:
+                status: "success"
+                data:
                   volunteer_id: 1
                   volunteer_name: "John Doe"
                   volunteer_email: "john@example.com"
                   role: "attendee"
-              error: null
-      400:
-        description: Missing credentials
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Missing credentials"
-                details: null
-      401:
-        description: Unauthorized
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Invalid credentials"
-                details: null
-      500:
-        description: Internal Server Error
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Login failed"
-                details: null
+                error: null
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Missing fields"
+                  details: null
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Failed to register"
+                  details: null
 
-/auth/refresh:
-  post:
-    summary: Refresh access token using refresh_token cookie
-    tags: [Authentication]
-    responses:
-      200:
-        description: Access token refreshed
+  /auth/login:
+    post:
+      summary: Login as volunteer
+      tags: [Authentication]
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: "#/components/schemas/ApiResponseSuccess"
-                - type: object
-                  properties:
-                    data:
-                      type: object
-                      properties:
-                        accessToken:
-                          type: string
-                        user:
-                          $ref: "#/components/schemas/VolunteerSafe"
+              type: object
+              properties:
+                volunteer_email:
+                  type: string
+                password:
+                  type: string
             example:
-              status: "success"
-              data:
-                accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
-                user:
-                  volunteer_id: 1
-                  volunteer_name: "John Doe"
-                  volunteer_email: "john@example.com"
-                  role: "attendee"
-              error: null
-      401:
-        description: Unauthorized
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Invalid refresh token"
-                details: null
-      500:
-        description: Internal Server Error
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Could not refresh token"
-                details: null
+              volunteer_email: "john@example.com"
+              password: "SecurePass123!"
+      responses:
+        200:
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          accessToken:
+                            type: string
+                          user:
+                            $ref: "#/components/schemas/VolunteerSafe"
+              example:
+                status: "success"
+                data:
+                  accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+                  user:
+                    volunteer_id: 1
+                    volunteer_name: "John Doe"
+                    volunteer_email: "john@example.com"
+                    role: "attendee"
+                error: null
+        400:
+          description: Missing credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Missing credentials"
+                  details: null
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Invalid credentials"
+                  details: null
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Login failed"
+                  details: null
 
-/auth/logout:
-  post:
-    summary: Logout user (removes refresh token)
-    tags: [Authentication]
-    responses:
-      200:
-        description: Successfully logged out
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseSuccess"
-            example:
-              status: "success"
-              data: true
-              error: null
-      500:
-        description: Internal Server Error
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Logout failed"
-                details: null
+  /auth/refresh:
+    post:
+      summary: Refresh access token using refresh_token cookie
+      tags: [Authentication]
+      responses:
+        200:
+          description: Access token refreshed
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          accessToken:
+                            type: string
+                          user:
+                            $ref: "#/components/schemas/VolunteerSafe"
+              example:
+                status: "success"
+                data:
+                  accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+                  user:
+                    volunteer_id: 1
+                    volunteer_name: "John Doe"
+                    volunteer_email: "john@example.com"
+                    role: "attendee"
+                error: null
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Invalid refresh token"
+                  details: null
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Could not refresh token"
+                  details: null
+
+  /auth/logout:
+    post:
+      summary: Logout user (removes refresh token)
+      tags: [Authentication]
+      responses:
+        200:
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseSuccess"
+              example:
+                status: "success"
+                data: true
+                error: null
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Logout failed"
+                  details: null
 
   /collections:
     get:
@@ -763,206 +777,206 @@ paths:
                   message: "Failed to create garbage"
                   details: null
 
-/garbage/{garbage_id}:
-  get:
-    summary: Get a garbage item by id
-    tags: [Garbage]
-    parameters:
-      - name: garbage_id
-        in: path
-        required: true
-        schema:
-          type: integer
-    responses:
-      200:
-        description: Garbage found
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: "#/components/schemas/ApiResponseSuccess"
-                - type: object
-                  properties:
-                    data:
-                      $ref: "#/components/schemas/Garbage"
-            example:
-              status: "success"
-              data:
-                garbage_id: 2
-                collection_id: 1
-                garbage_type: "Paper"
-                quantity_kg: 4.1
-              error: null
-      400:
-        description: Invalid ID
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Invalid id"
-                details: null
-      404:
-        description: Not found
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Not found"
-                details: null
-
-  put:
-    summary: Update a garbage item
-    tags: [Garbage]
-    parameters:
-      - name: garbage_id
-        in: path
-        required: true
-        schema:
-          type: integer
-    requestBody:
-      required: true
-      content:
-        application/json:
+  /garbage/{garbage_id}:
+    get:
+      summary: Get a garbage item by id
+      tags: [Garbage]
+      parameters:
+        - name: garbage_id
+          in: path
+          required: true
           schema:
-            type: object
-            properties:
-              collection_id:
-                type: integer
-                nullable: true
-              garbage_type:
-                type: string
-              quantity_kg:
-                type: number
-                format: float
-          example:
-            garbage_type: "Glass"
-            quantity_kg: 3.7
-    responses:
-      200:
-        description: Updated
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: "#/components/schemas/ApiResponseSuccess"
-                - type: object
-                  properties:
-                    data:
-                      $ref: "#/components/schemas/Garbage"
-            example:
-              status: "success"
-              data:
-                garbage_id: 2
-                collection_id: 1
-                garbage_type: "Glass"
-                quantity_kg: 3.7
-              error: null
-      400:
-        description: Bad Request
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Invalid id"
-                details: null
-      404:
-        description: Not found
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Not found"
-                details: null
-      500:
-        description: Internal server error
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Failed to update garbage"
-                details: null
+            type: integer
+      responses:
+        200:
+          description: Garbage found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Garbage"
+              example:
+                status: "success"
+                data:
+                  garbage_id: 2
+                  collection_id: 1
+                  garbage_type: "Paper"
+                  quantity_kg: 4.1
+                error: null
+        400:
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Invalid id"
+                  details: null
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Not found"
+                  details: null
 
-  delete:
-    summary: Delete a garbage item
-    tags: [Garbage]
-    parameters:
-      - name: garbage_id
-        in: path
+    put:
+      summary: Update a garbage item
+      tags: [Garbage]
+      parameters:
+        - name: garbage_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
         required: true
-        schema:
-          type: integer
-    responses:
-      200:
-        description: Deleted (returns boolean in data)
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: "#/components/schemas/ApiResponseSuccess"
-                - type: object
-                  properties:
-                    data:
-                      type: boolean
+              type: object
+              properties:
+                collection_id:
+                  type: integer
+                  nullable: true
+                garbage_type:
+                  type: string
+                quantity_kg:
+                  type: number
+                  format: float
             example:
-              status: "success"
-              data: true
-              error: null
-      400:
-        description: Invalid ID
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Invalid id"
-                details: null
-      404:
-        description: Not found
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Not found"
-                details: null
-      500:
-        description: Internal server error
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Failed to delete garbage"
-                details: null
+              garbage_type: "Glass"
+              quantity_kg: 3.7
+      responses:
+        200:
+          description: Updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Garbage"
+              example:
+                status: "success"
+                data:
+                  garbage_id: 2
+                  collection_id: 1
+                  garbage_type: "Glass"
+                  quantity_kg: 3.7
+                error: null
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Invalid id"
+                  details: null
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Not found"
+                  details: null
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Failed to update garbage"
+                  details: null
+
+    delete:
+      summary: Delete a garbage item
+      tags: [Garbage]
+      parameters:
+        - name: garbage_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Deleted (returns boolean in data)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        type: boolean
+              example:
+                status: "success"
+                data: true
+                error: null
+        400:
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Invalid id"
+                  details: null
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Not found"
+                  details: null
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Failed to delete garbage"
+                  details: null
 
   /volunteers:
     get:
@@ -1066,207 +1080,207 @@ paths:
                   message: "Failed to create volunteer"
                   details: null
 
-/volunteers/{volunteer_id}:
-  get:
-    summary: Get volunteer by id
-    tags: [Volunteer]
-    parameters:
-      - name: volunteer_id
-        in: path
-        required: true
-        schema:
-          type: integer
-    responses:
-      200:
-        description: Volunteer found
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: "#/components/schemas/ApiResponseSuccess"
-                - type: object
-                  properties:
-                    data:
-                      $ref: "#/components/schemas/VolunteerSafe"
-            example:
-              status: "success"
-              data:
-                volunteer_id: 2
-                volunteer_name: "Bob"
-                volunteer_email: "bob@example.com"
-                role: "admin"
-              error: null
-      400:
-        description: Invalid ID
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Invalid id"
-                details: null
-      404:
-        description: Not found
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Not found"
-                details: null
-
-  put:
-    summary: Update a volunteer
-    tags: [Volunteer]
-    parameters:
-      - name: volunteer_id
-        in: path
-        required: true
-        schema:
-          type: integer
-    requestBody:
-      required: true
-      content:
-        application/json:
+  /volunteers/{volunteer_id}:
+    get:
+      summary: Get volunteer by id
+      tags: [Volunteer]
+      parameters:
+        - name: volunteer_id
+          in: path
+          required: true
           schema:
-            type: object
-            properties:
-              volunteer_name:
-                type: string
-              volunteer_email:
-                type: string
-              password:
-                type: string
-              role:
-                type: string
-                enum: [admin, attendee]
-          example:
-            volunteer_name: "Bobby"
-            role: "attendee"
-    responses:
-      200:
-        description: Updated
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: "#/components/schemas/ApiResponseSuccess"
-                - type: object
-                  properties:
-                    data:
-                      $ref: "#/components/schemas/VolunteerSafe"
-            example:
-              status: "success"
-              data:
-                volunteer_id: 2
-                volunteer_name: "Bobby"
-                volunteer_email: "bob@example.com"
-                role: "attendee"
-              error: null
-      400:
-        description: Invalid ID or Bad Request
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Invalid id"
-                details: null
-      404:
-        description: Not found
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Not found"
-                details: null
-      500:
-        description: Internal server error
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Failed to update volunteer"
-                details: null
+            type: integer
+      responses:
+        200:
+          description: Volunteer found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/VolunteerSafe"
+              example:
+                status: "success"
+                data:
+                  volunteer_id: 2
+                  volunteer_name: "Bob"
+                  volunteer_email: "bob@example.com"
+                  role: "admin"
+                error: null
+        400:
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Invalid id"
+                  details: null
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Not found"
+                  details: null
 
-  delete:
-    summary: Delete a volunteer
-    tags: [Volunteer]
-    parameters:
-      - name: volunteer_id
-        in: path
+    put:
+      summary: Update a volunteer
+      tags: [Volunteer]
+      parameters:
+        - name: volunteer_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
         required: true
-        schema:
-          type: integer
-    responses:
-      200:
-        description: Deleted (boolean in data)
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: "#/components/schemas/ApiResponseSuccess"
-                - type: object
-                  properties:
-                    data:
-                      type: boolean
+              type: object
+              properties:
+                volunteer_name:
+                  type: string
+                volunteer_email:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+                  enum: [admin, attendee]
             example:
-              status: "success"
-              data: true
-              error: null
-      400:
-        description: Invalid ID
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Invalid id"
-                details: null
-      404:
-        description: Not found
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Not found"
-                details: null
-      500:
-        description: Internal server error
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Failed to delete volunteer"
-                details: null
+              volunteer_name: "Bobby"
+              role: "attendee"
+      responses:
+        200:
+          description: Updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/VolunteerSafe"
+              example:
+                status: "success"
+                data:
+                  volunteer_id: 2
+                  volunteer_name: "Bobby"
+                  volunteer_email: "bob@example.com"
+                  role: "attendee"
+                error: null
+        400:
+          description: Invalid ID or Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Invalid id"
+                  details: null
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Not found"
+                  details: null
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Failed to update volunteer"
+                  details: null
+
+    delete:
+      summary: Delete a volunteer
+      tags: [Volunteer]
+      parameters:
+        - name: volunteer_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Deleted (boolean in data)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        type: boolean
+              example:
+                status: "success"
+                data: true
+                error: null
+        400:
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Invalid id"
+                  details: null
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Not found"
+                  details: null
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Failed to delete volunteer"
+                  details: null
 
   /volunteer_collection:
     get:
@@ -1370,197 +1384,392 @@ paths:
                   message: "Failed to create volunteer_collection"
                   details: null
 
-/volunteer_collection/{volunteer_collection_id}:
-  get:
-    summary: Get a volunteer_collection by id
-    tags: [VolunteerCollection]
-    parameters:
-      - name: volunteer_collection_id
-        in: path
-        required: true
-        schema:
-          type: integer
-    responses:
-      200:
-        description: VolunteerCollection found
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: "#/components/schemas/ApiResponseSuccess"
-                - type: object
-                  properties:
-                    data:
-                      $ref: "#/components/schemas/VolunteerCollection"
-            example:
-              status: "success"
-              data:
-                volunteer_collection_id: 2
-                volunteer_id: 3
-                collection_id: 2
-              error: null
-      400:
-        description: Invalid ID
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Invalid id"
-                details: null
-      404:
-        description: Not found
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Not found"
-                details: null
-
-  put:
-    summary: Update a volunteer_collection
-    tags: [VolunteerCollection]
-    parameters:
-      - name: volunteer_collection_id
-        in: path
-        required: true
-        schema:
-          type: integer
-    requestBody:
-      required: true
-      content:
-        application/json:
+  /volunteer_collection/{volunteer_collection_id}:
+    get:
+      summary: Get a volunteer_collection by id
+      tags: [VolunteerCollection]
+      parameters:
+        - name: volunteer_collection_id
+          in: path
+          required: true
           schema:
-            type: object
-            properties:
-              volunteer_id:
-                type: integer
-              collection_id:
-                type: integer
-          example:
-            volunteer_id: 1
-            collection_id: 2
-    responses:
-      200:
-        description: Updated
-        content:
-          application/json:
-            schema:
-              allOf:
-                - $ref: "#/components/schemas/ApiResponseSuccess"
-                - type: object
-                  properties:
-                    data:
-                      $ref: "#/components/schemas/VolunteerCollection"
-            example:
-              status: "success"
-              data:
-                volunteer_collection_id: 2
-                volunteer_id: 1
-                collection_id: 2
-              error: null
-      400:
-        description: Invalid ID or Bad Request
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Invalid id"
-                details: null
-      404:
-        description: Not found
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Not found"
-                details: null
-      500:
-        description: Internal server error
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Failed to update volunteer_collection"
-                details: null
+            type: integer
+      responses:
+        200:
+          description: VolunteerCollection found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/VolunteerCollection"
+              example:
+                status: "success"
+                data:
+                  volunteer_collection_id: 2
+                  volunteer_id: 3
+                  collection_id: 2
+                error: null
+        400:
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Invalid id"
+                  details: null
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Not found"
+                  details: null
 
-  delete:
-    summary: Delete a volunteer_collection
-    tags: [VolunteerCollection]
-    parameters:
-      - name: volunteer_collection_id
-        in: path
+    put:
+      summary: Update a volunteer_collection
+      tags: [VolunteerCollection]
+      parameters:
+        - name: volunteer_collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
         required: true
-        schema:
-          type: integer
-    responses:
-      200:
-        description: Deleted (boolean in data)
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: "#/components/schemas/ApiResponseSuccess"
-                - type: object
-                  properties:
-                    data:
-                      type: boolean
+              type: object
+              properties:
+                volunteer_id:
+                  type: integer
+                collection_id:
+                  type: integer
             example:
-              status: "success"
-              data: true
-              error: null
-      400:
-        description: Invalid ID
+              volunteer_id: 1
+              collection_id: 2
+      responses:
+        200:
+          description: Updated
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/VolunteerCollection"
+              example:
+                status: "success"
+                data:
+                  volunteer_collection_id: 2
+                  volunteer_id: 1
+                  collection_id: 2
+                error: null
+        400:
+          description: Invalid ID or Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Invalid id"
+                  details: null
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Not found"
+                  details: null
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Failed to update volunteer_collection"
+                  details: null
+
+    delete:
+      summary: Delete a volunteer_collection
+      tags: [VolunteerCollection]
+      parameters:
+        - name: volunteer_collection_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Deleted (boolean in data)
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        type: boolean
+              example:
+                status: "success"
+                data: true
+                error: null
+        400:
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Invalid id"
+                  details: null
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Not found"
+                  details: null
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Failed to delete volunteer_collection"
+                  details: null
+
+  /sessions:
+    get:
+      summary: Get all sessions
+      tags: [Session]
+      responses:
+        200:
+          description: List of sessions
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Session"
+              example:
+                status: "success"
+                data:
+                  - token_id: "123e4567-e89b-12d3-a456-426614174000"
+                    volunteer_id: 1
+                    issued_at: "2024-07-05T10:00:00Z"
+                    expires_at: "2024-07-05T11:00:00Z"
+                error: null
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Failed to fetch sessions"
+                  details: null
+
+    post:
+      summary: Create a session
+      tags: [Session]
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ApiResponseError"
+              $ref: "#/components/schemas/Session"
             example:
-              status: "error"
-              data: null
-              error:
-                message: "Invalid id"
-                details: null
-      404:
-        description: Not found
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Not found"
-                details: null
-      500:
-        description: Internal server error
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApiResponseError"
-            example:
-              status: "error"
-              data: null
-              error:
-                message: "Failed to delete volunteer_collection"
-                details: null
+              token_id: "123e4567-e89b-12d3-a456-426614174000"
+              volunteer_id: 1
+              issued_at: "2024-07-05T10:00:00Z"
+              expires_at: "2024-07-05T11:00:00Z"
+      responses:
+        201:
+          description: Created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Session"
+              example:
+                status: "success"
+                data:
+                  token_id: "123e4567-e89b-12d3-a456-426614174000"
+                  volunteer_id: 1
+                  issued_at: "2024-07-05T10:00:00Z"
+                  expires_at: "2024-07-05T11:00:00Z"
+                error: null
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Missing required fields"
+                  details: null
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Failed to create session"
+                  details: null
+
+  /sessions/{token_id}:
+    get:
+      summary: Get session by token_id
+      tags: [Session]
+      parameters:
+        - name: token_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Session found
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiResponseSuccess"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/Session"
+              example:
+                status: "success"
+                data:
+                  token_id: "123e4567-e89b-12d3-a456-426614174000"
+                  volunteer_id: 1
+                  issued_at: "2024-07-05T10:00:00Z"
+                  expires_at: "2024-07-05T11:00:00Z"
+                error: null
+        400:
+          description: Invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Invalid token_id"
+                  details: null
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Session not found"
+                  details: null
+
+    delete:
+      summary: Delete session by token_id
+      tags: [Session]
+      parameters:
+        - name: token_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Deleted successfully (no content)
+          content:
+            application/json:
+              schema:
+                type: object
+                example: {}
+        404:
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Session not found"
+                  details: null
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponseError"
+              example:
+                status: "error"
+                data: null
+                error:
+                  message: "Failed to delete session"
+                  details: null
