@@ -113,19 +113,23 @@ export class AuthenticationController {
   ) => {
     const refreshToken = req.cookies.refresh_token;
     if (!refreshToken) {
-      sendError(res, "Missing refresh token", 401);
+      // No cookie: Unauthorized
+      sendError(res, "Invalid refresh token", 401);
       return;
     }
 
     try {
+      // Attempt to get the user from the refresh token (could be invalid/expired)
       const user = await this.refreshUseCase.execute(refreshToken);
-      if (!user) {
+
+      if (!user?.volunteer_id) {
+        // Invalid/expired/not found in DB
         sendError(res, "Invalid refresh token", 401);
         return;
       }
 
+      // Success: issue new access token
       const expiresIn = process.env.ACCESS_TOKEN_EXPIRES_IN ?? "1h";
-
       const accessToken = signAccessToken(
         { volunteer_id: user.volunteer_id, role: user.role },
         expiresIn,
@@ -133,7 +137,9 @@ export class AuthenticationController {
 
       sendSuccess(res, { accessToken, user: toJSONSafe(user) }, 200);
     } catch (err) {
-      next(err);
+      // If your use case can throw for verification/DB problems, treat as 401
+      sendError(res, "Invalid refresh token", 401);
+      next(err); // For logging, but not for client
     }
   };
 
@@ -144,6 +150,7 @@ export class AuthenticationController {
     next: NextFunction,
   ) => {
     const refreshToken = req.cookies.refresh_token;
+    // ADD THIS LOG
     if (!refreshToken) {
       sendSuccess(res, null, 204);
       return;
