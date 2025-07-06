@@ -1,0 +1,68 @@
+%% docs\diagrams\session.mmd
+
+classDiagram
+    class Session {
+        + token_id: string
+        + volunteer_id: number
+        + issued_at: Date
+        + expires_at: Date
+    }
+
+    class SessionController {
+        - repo: SessionRepository
+        - getAllUseCase: GetAllSessions
+        - getByIdUseCase: GetSessionById
+        - createUseCase: CreateSession
+        - deleteUseCase: DeleteSession
+        + getAllSessions(req, res, next)
+        + getSessionById(req, res, next)
+        + createSession(req, res, next)
+        + deleteSession(req, res, next)
+    }
+
+    class GetAllSessions {
+        - repo: ISessionRepository
+        + execute(): Session[]
+    }
+
+    class GetSessionById {
+        - repo: ISessionRepository
+        + execute(token_id: string): Session or null
+    }
+
+    class CreateSession {
+        - repo: ISessionRepository
+        + execute(data): Session
+    }
+
+    class DeleteSession {
+        - repo: ISessionRepository
+        + execute(token_id: string): boolean
+    }
+
+    class ISessionRepository {
+        <<interface>>
+        + getAllSessions(): Session[]
+        + getSessionById(token_id: string): Session or null
+        + createSession(data): Session
+        + deleteSession(token_id: string): boolean
+    }
+
+    class SessionRepository {
+        + getAllSessions(): Session[]
+        + getSessionById(token_id: string): Session or null
+        + createSession(data): Session
+        + deleteSession(token_id: string): boolean
+    }
+
+    ISessionRepository <|.. SessionRepository : implements
+    SessionController --> GetAllSessions : "fetches all"
+    SessionController --> GetSessionById : "fetches by id"
+    SessionController --> CreateSession : "creates"
+    SessionController --> DeleteSession : "deletes"
+    SessionController --> SessionRepository : "uses repository"
+    GetAllSessions ..> ISessionRepository : "calls"
+    GetSessionById ..> ISessionRepository : "calls"
+    CreateSession ..> ISessionRepository : "calls"
+    DeleteSession ..> ISessionRepository : "calls"
+

@@ -1,0 +1,69 @@
+%% docs\diagrams\authentication.mmd
+
+classDiagram
+    class AuthUser {
+        + volunteer_id: number
+        + volunteer_email: string
+        + volunteer_name: string
+        + role: volunteer_role
+    }
+
+    class AuthenticationController {
+        - repo: AuthenticationRepository
+        - registerUseCase: Register
+        - loginUseCase: Login
+        - refreshUseCase: Refresh
+        - logoutUseCase: Logout
+        + register(req, res, next)
+        + login(req, res, next)
+        + refresh(req, res, next)
+        + logout(req, res, next)
+    }
+
+    class Register {
+        - repo: IAuthenticationRepository
+        + execute(data): AuthUser
+    }
+
+    class Login {
+        - repo: IAuthenticationRepository
+        + execute(data): AuthUser or null
+    }
+
+    class Refresh {
+        - repo: IAuthenticationRepository
+        + execute(refreshToken: string): AuthUser or null
+    }
+
+    class Logout {
+        - repo: IAuthenticationRepository
+        + execute(refreshToken: string): void
+    }
+
+    class IAuthenticationRepository {
+        <<interface>>
+        + register(data): AuthUser
+        + login(data): AuthUser or null
+        + storeRefreshToken(data): void
+        + findUserByRefreshToken(refreshToken: string): AuthUser or null
+        + invalidateRefreshToken(refreshToken: string): void
+    }
+
+    class AuthenticationRepository {
+        + register(data): AuthUser
+        + login(data): AuthUser or null
+        + storeRefreshToken(data): void
+        + findUserByRefreshToken(refreshToken: string): AuthUser or null
+        + invalidateRefreshToken(refreshToken: string): void
+    }
+
+    IAuthenticationRepository <|.. AuthenticationRepository : implements
+    AuthenticationController --> Register : "registers"
+    AuthenticationController --> Login : "logs in"
+    AuthenticationController --> Refresh : "refreshes"
+    AuthenticationController --> Logout : "logs out"
+    AuthenticationController --> AuthenticationRepository : "uses repository"
+    Register ..> IAuthenticationRepository : "calls"
+    Login ..> IAuthenticationRepository : "calls"
+    Refresh ..> IAuthenticationRepository : "calls"
+    Logout ..> IAuthenticationRepository : "calls"

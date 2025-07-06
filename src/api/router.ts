@@ -11,6 +11,7 @@ import { CollectionController } from "~/src/api/controllers/CollectionController
 import { GarbageController } from "~/src/api/controllers/GarbageController";
 import { VolunteerController } from "~/src/api/controllers/VolunteerController";
 import { VolunteerCollectionController } from "~/src/api/controllers/VolunteerCollectionController";
+import { SessionController } from "~/src/api/controllers/SessionController";
 
 const router = express.Router();
 const swaggerDocument = YAML.load(
@@ -22,6 +23,7 @@ const collectionController = new CollectionController();
 const garbageController = new GarbageController();
 const volunteerController = new VolunteerController();
 const volunteerCollectionController = new VolunteerCollectionController();
+const controller = new SessionController();
 
 // Docs
 router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -107,5 +109,12 @@ router.delete(
   "/volunteer_collection/:volunteer_collection_id",
   asyncHandler(volunteerCollectionController.deleteVolunteerCollection),
 );
+
+// Session routes
+
+router.get("/sessions", asyncHandler(controller.getAllSessions));
+router.get("/sessions/:token_id", asyncHandler(controller.getSessionById));
+router.post("/sessions", asyncHandler(controller.createSession));
+router.delete("/sessions/:token_id", asyncHandler(controller.deleteSession));
 
 export default router;
