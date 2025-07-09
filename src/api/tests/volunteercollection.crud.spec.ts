@@ -4,7 +4,6 @@ import request from "supertest";
 import app from "~/src/api/index";
 import { faker } from "@faker-js/faker";
 import prisma from "~/prisma/lib/client";
-import http from "http";
 
 type VolunteerCollectionResponse = {
   volunteer_collection_id: number;
@@ -12,28 +11,35 @@ type VolunteerCollectionResponse = {
   collection_id: number | null;
 };
 
-let server: http.Server;
+let adminToken: string;
 let volunteerIds: number[] = [];
 let collectionIds: number[] = [];
+
+async function loginAsAdmin() {
+  const res = await request(app)
+    .post("/api/auth/login")
+    .send({ volunteer_email: "admin@example.com", password: "password123" });
+  if (!res.body?.data?.accessToken) {
+    throw new Error("Login failed: " + (res.body?.error?.message || "unknown"));
+  }
+  return res.body.data.accessToken;
+}
 
 async function createVolunteerCollection(override = {}) {
   const base = {
     volunteer_id: faker.helpers.arrayElement(volunteerIds),
     collection_id: faker.helpers.arrayElement(collectionIds),
   };
-  const response = await request(server)
+  const response = await request(app)
     .post("/api/volunteer_collection")
+    .set("Authorization", `Bearer ${adminToken}`)
     .send({ ...base, ...override });
   return response;
 }
 
 describe("VolunteerCollection API CRUD", () => {
-  jest.setTimeout(15000);
-
   beforeAll(async () => {
-    server = app.listen(0);
-    await new Promise<void>((resolve) => server.once("listening", resolve));
-
+    adminToken = await loginAsAdmin();
     volunteerIds = (
       await prisma.volunteer.findMany({ select: { volunteer_id: true } })
     ).map((v) => Number(v.volunteer_id));
@@ -44,7 +50,6 @@ describe("VolunteerCollection API CRUD", () => {
 
   afterAll(async () => {
     await prisma.$disconnect();
-    server.close();
   });
 
   let createdVolunteerCollection: VolunteerCollectionResponse;
@@ -65,8 +70,9 @@ describe("VolunteerCollection API CRUD", () => {
     });
 
     it("should fail with missing required fields", async () => {
-      const res = await request(server)
+      const res = await request(app)
         .post("/api/volunteer_collection")
+        .set("Authorization", `Bearer ${adminToken}`)
         .send({})
         .expect(400);
       expect(res.body.status).toBe("error");
@@ -76,7 +82,9 @@ describe("VolunteerCollection API CRUD", () => {
 
   describe("GET /api/volunteer_collection", () => {
     it("should fetch all volunteer_collections", async () => {
-      const res = await request(server).get("/api/volunteer_collection");
+      const res = await request(app)
+        .get("/api/volunteer_collection")
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.data)).toBe(true);
       expect(
@@ -91,9 +99,11 @@ describe("VolunteerCollection API CRUD", () => {
 
   describe("GET /api/volunteer_collection/:id", () => {
     it("should fetch a volunteer_collection by id", async () => {
-      const res = await request(server).get(
-        `/api/volunteer_collection/${createdVolunteerCollection.volunteer_collection_id}`,
-      );
+      const res = await request(app)
+        .get(
+          `/api/volunteer_collection/${createdVolunteerCollection.volunteer_collection_id}`,
+        )
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(200);
       expect(res.body.data.volunteer_collection_id).toBe(
         createdVolunteerCollection.volunteer_collection_id,
@@ -101,7 +111,9 @@ describe("VolunteerCollection API CRUD", () => {
     });
 
     it("should return 404 for non-existent volunteer_collection", async () => {
-      const res = await request(server).get("/api/volunteer_collection/999999");
+      const res = await request(app)
+        .get("/api/volunteer_collection/999999")
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(404);
       expect(res.body.status).toBe("error");
       expect(res.body.error?.message).toMatch(/not found/i);
@@ -112,10 +124,11 @@ describe("VolunteerCollection API CRUD", () => {
     it("should update a volunteer_collection", async () => {
       const newVolunteer = faker.helpers.arrayElement(volunteerIds);
       const newCollection = faker.helpers.arrayElement(collectionIds);
-      const res = await request(server)
+      const res = await request(app)
         .put(
           `/api/volunteer_collection/${createdVolunteerCollection.volunteer_collection_id}`,
         )
+        .set("Authorization", `Bearer ${adminToken}`)
         .send({
           volunteer_id: newVolunteer,
           collection_id: newCollection,
@@ -126,8 +139,9 @@ describe("VolunteerCollection API CRUD", () => {
     });
 
     it("should 404 on update for non-existent volunteer_collection", async () => {
-      const res = await request(server)
+      const res = await request(app)
         .put("/api/volunteer_collection/999999")
+        .set("Authorization", `Bearer ${adminToken}`)
         .send({
           volunteer_id: faker.helpers.arrayElement(volunteerIds),
           collection_id: faker.helpers.arrayElement(collectionIds),
@@ -140,25 +154,29 @@ describe("VolunteerCollection API CRUD", () => {
 
   describe("DELETE /api/volunteer_collection/:id", () => {
     it("should delete a volunteer_collection", async () => {
-      const res = await request(server).delete(
-        `/api/volunteer_collection/${createdVolunteerCollection.volunteer_collection_id}`,
-      );
+      const res = await request(app)
+        .delete(
+          `/api/volunteer_collection/${createdVolunteerCollection.volunteer_collection_id}`,
+        )
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(204);
     });
 
     it("should 404 on delete for non-existent volunteer_collection", async () => {
-      const res = await request(server).delete(
-        "/api/volunteer_collection/999999",
-      );
+      const res = await request(app)
+        .delete("/api/volunteer_collection/999999")
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(404);
       expect(res.body.status).toBe("error");
       expect(res.body.error?.message).toMatch(/not found/i);
     });
 
     it("should return 404 when fetching deleted volunteer_collection", async () => {
-      const res = await request(server).get(
-        `/api/volunteer_collection/${createdVolunteerCollection.volunteer_collection_id}`,
-      );
+      const res = await request(app)
+        .get(
+          `/api/volunteer_collection/${createdVolunteerCollection.volunteer_collection_id}`,
+        )
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(404);
       expect(res.body.status).toBe("error");
     });

@@ -11,7 +11,21 @@ type CollectionResponse = {
   collection_place: string;
 };
 
-// Helper: create a collection
+let adminToken: string;
+
+async function loginAsAdmin() {
+  const res = await request(app)
+    .post("/api/auth/login")
+    .send({ volunteer_email: "admin@example.com", password: "password123" });
+
+  // DEBUG: print response if not as expected
+  if (!res.body?.data?.accessToken) {
+    throw new Error("Login failed: " + (res.body?.error?.message || "unknown"));
+  }
+  return res.body.data.accessToken;
+}
+
+// Helper: create a collection (always include Authorization)
 async function createCollection(override = {}) {
   const base = {
     collection_date: faker.date
@@ -23,14 +37,18 @@ async function createCollection(override = {}) {
       .slice(0, 10),
     collection_place: faker.location.city(),
   };
-  const response = await request(app)
+  return await request(app)
     .post("/api/collections")
+    .set("Authorization", `Bearer ${adminToken}`)
     .send({ ...base, ...override });
-  return response;
 }
 
 describe("Collection API CRUD", () => {
   let createdCollection: CollectionResponse;
+
+  beforeAll(async () => {
+    adminToken = await loginAsAdmin();
+  });
 
   afterAll(async () => {
     await prisma.$disconnect();
@@ -50,6 +68,7 @@ describe("Collection API CRUD", () => {
     it("should fail with missing required fields", async () => {
       const res = await request(app)
         .post("/api/collections")
+        .set("Authorization", `Bearer ${adminToken}`)
         .send({}) // Missing all fields
         .expect(400);
       expect(res.body.status).toBe("error");
@@ -74,16 +93,18 @@ describe("Collection API CRUD", () => {
 
   describe("GET /api/collections/:collection_id", () => {
     it("should fetch a collection by id", async () => {
-      const res = await request(app).get(
-        `/api/collections/${createdCollection.collection_id}`,
-      );
+      const res = await request(app)
+        .get(`/api/collections/${createdCollection.collection_id}`)
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(200);
       expect(res.body.status).toBe("success");
       expect(res.body.data.collection_id).toBe(createdCollection.collection_id);
     });
 
     it("should return 404 for non-existent collection", async () => {
-      const res = await request(app).get("/api/collections/999999");
+      const res = await request(app)
+        .get("/api/collections/999999")
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(404);
       expect(res.body.status).toBe("error");
       expect(res.body.error?.message).toMatch(/not found/i);
@@ -95,6 +116,7 @@ describe("Collection API CRUD", () => {
       const newPlace = faker.location.city();
       const res = await request(app)
         .put(`/api/collections/${createdCollection.collection_id}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send({ collection_place: newPlace });
       expect(res.status).toBe(200);
       expect(res.body.status).toBe("success");
@@ -104,6 +126,7 @@ describe("Collection API CRUD", () => {
     it("should 404 on update for non-existent collection", async () => {
       const res = await request(app)
         .put("/api/collections/999999")
+        .set("Authorization", `Bearer ${adminToken}`)
         .send({ collection_place: faker.location.city() });
       expect(res.status).toBe(404);
       expect(res.body.status).toBe("error");
@@ -113,9 +136,9 @@ describe("Collection API CRUD", () => {
 
   describe("DELETE /api/collections/:collection_id", () => {
     it("should delete a collection", async () => {
-      const res = await request(app).delete(
-        `/api/collections/${createdCollection.collection_id}`,
-      );
+      const res = await request(app)
+        .delete(`/api/collections/${createdCollection.collection_id}`)
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(200);
       expect(res.body.status).toBe("success");
       expect(res.body.data).toBeNull();
@@ -123,16 +146,18 @@ describe("Collection API CRUD", () => {
     });
 
     it("should 404 on delete for non-existent collection", async () => {
-      const res = await request(app).delete("/api/collections/999999");
+      const res = await request(app)
+        .delete("/api/collections/999999")
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(404);
       expect(res.body.status).toBe("error");
       expect(res.body.error?.message).toMatch(/not found/i);
     });
 
     it("should return 404 when fetching deleted collection", async () => {
-      const res = await request(app).get(
-        `/api/collections/${createdCollection.collection_id}`,
-      );
+      const res = await request(app)
+        .get(`/api/collections/${createdCollection.collection_id}`)
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(404);
       expect(res.body.status).toBe("error");
     });

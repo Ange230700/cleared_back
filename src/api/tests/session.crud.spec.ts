@@ -12,13 +12,24 @@ type SessionResponse = {
   expires_at: string;
 };
 
+let adminToken: string;
+
+async function loginAsAdmin() {
+  const res = await request(app)
+    .post("/api/auth/login")
+    .send({ volunteer_email: "admin@example.com", password: "password123" });
+  if (!res.body?.data?.accessToken) {
+    throw new Error("Login failed: " + (res.body?.error?.message || "unknown"));
+  }
+  return res.body.data.accessToken;
+}
+
 describe("Session API CRUD", () => {
-  // Keep track of created entities for cleanup and reference
   let volunteer: { volunteer_id: number };
   let createdSession: SessionResponse;
 
-  // Prepare a test volunteer, required by Session schema
   beforeAll(async () => {
+    adminToken = await loginAsAdmin();
     // Create a volunteer
     const v = await prisma.volunteer.create({
       data: {
@@ -32,9 +43,7 @@ describe("Session API CRUD", () => {
     volunteer = { volunteer_id: Number(v.volunteer_id) };
   });
 
-  // Clean up after all tests
   afterAll(async () => {
-    // Delete sessions and volunteer
     if (createdSession?.token_id) {
       await prisma.session.deleteMany({
         where: { token_id: createdSession.token_id },
@@ -61,6 +70,7 @@ describe("Session API CRUD", () => {
 
       const res = await request(app)
         .post("/api/sessions")
+        .set("Authorization", `Bearer ${adminToken}`)
         .send(sessionData)
         .expect(201);
 
@@ -76,7 +86,8 @@ describe("Session API CRUD", () => {
     it("should fail with missing required fields", async () => {
       const res = await request(app)
         .post("/api/sessions")
-        .send({}) // missing all fields
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({})
         .expect(400);
 
       expect(res.body.status).toBe("error");
@@ -86,11 +97,13 @@ describe("Session API CRUD", () => {
 
   describe("GET /api/sessions", () => {
     it("should list sessions", async () => {
-      const res = await request(app).get("/api/sessions").expect(200);
+      const res = await request(app)
+        .get("/api/sessions")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .expect(200);
 
       expect(res.body.status).toBe("success");
       expect(Array.isArray(res.body.data)).toBe(true);
-      // Should include the created session
       expect(
         res.body.data.some(
           (s: SessionResponse) => s.token_id === createdSession.token_id,
@@ -103,6 +116,7 @@ describe("Session API CRUD", () => {
     it("should get a session by token_id", async () => {
       const res = await request(app)
         .get(`/api/sessions/${createdSession.token_id}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .expect(200);
 
       expect(res.body.status).toBe("success");
@@ -113,6 +127,7 @@ describe("Session API CRUD", () => {
     it("should 404 for non-existing token_id", async () => {
       const res = await request(app)
         .get(`/api/sessions/does-not-exist-token`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .expect(404);
 
       expect(res.body.status).toBe("error");
@@ -124,15 +139,16 @@ describe("Session API CRUD", () => {
     it("should delete a session", async () => {
       const res = await request(app)
         .delete(`/api/sessions/${createdSession.token_id}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .expect(204);
 
-      // No data expected in response, status 204
       expect(res.body).toEqual({});
     });
 
     it("should 404 if deleting already deleted/non-existing session", async () => {
       const res = await request(app)
         .delete(`/api/sessions/${createdSession.token_id}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .expect(404);
 
       expect(res.body.status).toBe("error");

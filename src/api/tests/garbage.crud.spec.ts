@@ -12,7 +12,18 @@ type GarbageResponse = {
   quantity_kg: number;
 };
 
-// Helper: create a garbage
+let adminToken: string;
+
+async function loginAsAdmin() {
+  const res = await request(app)
+    .post("/api/auth/login")
+    .send({ volunteer_email: "admin@example.com", password: "password123" });
+  if (!res.body?.data?.accessToken) {
+    throw new Error("Login failed: " + (res.body?.error?.message || "unknown"));
+  }
+  return res.body.data.accessToken;
+}
+
 async function createGarbage(override = {}) {
   const collectionIds = (
     await prisma.collection.findMany({ select: { collection_id: true } })
@@ -34,12 +45,17 @@ async function createGarbage(override = {}) {
   };
   const response = await request(app)
     .post("/api/garbage")
+    .set("Authorization", `Bearer ${adminToken}`)
     .send({ ...base, ...override });
   return response;
 }
 
 describe("Garbage API CRUD", () => {
   let createdGarbage: GarbageResponse;
+
+  beforeAll(async () => {
+    adminToken = await loginAsAdmin();
+  });
 
   afterAll(async () => {
     await prisma.$disconnect();
@@ -61,7 +77,11 @@ describe("Garbage API CRUD", () => {
     });
 
     it("should fail with missing required fields", async () => {
-      const res = await request(app).post("/api/garbage").send({}).expect(400);
+      const res = await request(app)
+        .post("/api/garbage")
+        .set("Authorization", `Bearer ${adminToken}`)
+        .send({})
+        .expect(400);
       expect(res.body.status).toBe("error");
       expect(res.body.error?.message).toMatch(/missing/i);
     });
@@ -83,16 +103,18 @@ describe("Garbage API CRUD", () => {
 
   describe("GET /api/garbage/:garbage_id", () => {
     it("should fetch a garbage item by id", async () => {
-      const res = await request(app).get(
-        `/api/garbage/${createdGarbage.garbage_id}`,
-      );
+      const res = await request(app)
+        .get(`/api/garbage/${createdGarbage.garbage_id}`)
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(200);
       expect(res.body.status).toBe("success");
       expect(res.body.data.garbage_id).toBe(createdGarbage.garbage_id);
     });
 
     it("should return 404 for non-existent garbage", async () => {
-      const res = await request(app).get("/api/garbage/999999");
+      const res = await request(app)
+        .get("/api/garbage/999999")
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(404);
       expect(res.body.status).toBe("error");
       expect(res.body.error?.message).toMatch(/not found/i);
@@ -114,6 +136,7 @@ describe("Garbage API CRUD", () => {
       );
       const res = await request(app)
         .put(`/api/garbage/${createdGarbage.garbage_id}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .send({ garbage_type: newType, quantity_kg: newQuantity });
       expect(res.status).toBe(200);
       expect(res.body.status).toBe("success");
@@ -124,6 +147,7 @@ describe("Garbage API CRUD", () => {
     it("should 404 on update for non-existent garbage", async () => {
       const res = await request(app)
         .put("/api/garbage/999999")
+        .set("Authorization", `Bearer ${adminToken}`)
         .send({
           garbage_type: faker.helpers.arrayElement([
             "Plastic",
@@ -147,24 +171,26 @@ describe("Garbage API CRUD", () => {
 
   describe("DELETE /api/garbage/:garbage_id", () => {
     it("should delete a garbage item", async () => {
-      const res = await request(app).delete(
-        `/api/garbage/${createdGarbage.garbage_id}`,
-      );
+      const res = await request(app)
+        .delete(`/api/garbage/${createdGarbage.garbage_id}`)
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(204);
       expect(res.body).toEqual({});
     });
 
     it("should 404 on delete for non-existent garbage", async () => {
-      const res = await request(app).delete("/api/garbage/999999");
+      const res = await request(app)
+        .delete("/api/garbage/999999")
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(404);
       expect(res.body.status).toBe("error");
       expect(res.body.error?.message).toMatch(/not found/i);
     });
 
     it("should return 404 when fetching deleted garbage", async () => {
-      const res = await request(app).get(
-        `/api/garbage/${createdGarbage.garbage_id}`,
-      );
+      const res = await request(app)
+        .get(`/api/garbage/${createdGarbage.garbage_id}`)
+        .set("Authorization", `Bearer ${adminToken}`);
       expect(res.status).toBe(404);
       expect(res.body.status).toBe("error");
     });

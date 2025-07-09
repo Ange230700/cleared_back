@@ -12,6 +12,8 @@ import { GarbageController } from "~/src/api/controllers/GarbageController";
 import { VolunteerController } from "~/src/api/controllers/VolunteerController";
 import { VolunteerCollectionController } from "~/src/api/controllers/VolunteerCollectionController";
 import { SessionController } from "~/src/api/controllers/SessionController";
+import { requireAuth } from "~/src/api/middlewares/auth";
+import { requireRole } from "~/src/api/middlewares/role";
 
 const router = express.Router();
 const swaggerDocument = YAML.load(
@@ -41,18 +43,25 @@ router.get(
 );
 router.get(
   "/collections/:collection_id",
+  requireAuth,
   asyncHandler(collectionController.getCollectionById),
 );
 router.post(
   "/collections",
+  requireAuth,
+  requireRole("admin"),
   asyncHandler(collectionController.createCollection),
 );
 router.put(
   "/collections/:collection_id",
+  requireAuth,
+  requireRole("admin"),
   asyncHandler(collectionController.updateCollection),
 );
 router.delete(
   "/collections/:collection_id",
+  requireAuth,
+  requireRole("admin"),
   asyncHandler(collectionController.deleteCollection),
 );
 
@@ -60,15 +69,25 @@ router.delete(
 router.get("/garbage", asyncHandler(garbageController.getAllGarbage));
 router.get(
   "/garbage/:garbage_id",
+  requireAuth,
   asyncHandler(garbageController.getGarbageById),
 );
-router.post("/garbage", asyncHandler(garbageController.createGarbage));
+router.post(
+  "/garbage",
+  requireAuth,
+  requireRole("admin"),
+  asyncHandler(garbageController.createGarbage),
+);
 router.put(
   "/garbage/:garbage_id",
+  requireAuth,
+  requireRole("admin"),
   asyncHandler(garbageController.updateGarbage),
 );
 router.delete(
   "/garbage/:garbage_id",
+  requireAuth,
+  requireRole("admin"),
   asyncHandler(garbageController.deleteGarbage),
 );
 
@@ -76,15 +95,25 @@ router.delete(
 router.get("/volunteers", asyncHandler(volunteerController.getAllVolunteers));
 router.get(
   "/volunteers/:volunteer_id",
+  requireAuth,
   asyncHandler(volunteerController.getVolunteerById),
 );
-router.post("/volunteers", asyncHandler(volunteerController.createVolunteer));
+router.post(
+  "/volunteers",
+  requireAuth,
+  requireRole("admin"),
+  asyncHandler(volunteerController.createVolunteer),
+);
 router.put(
   "/volunteers/:volunteer_id",
+  requireAuth,
+  requireRole("admin"),
   asyncHandler(volunteerController.updateVolunteer),
 );
 router.delete(
   "/volunteers/:volunteer_id",
+  requireAuth,
+  requireRole("admin"),
   asyncHandler(volunteerController.deleteVolunteer),
 );
 
@@ -95,26 +124,41 @@ router.get(
 );
 router.get(
   "/volunteer_collection/:volunteer_collection_id",
+  requireAuth,
   asyncHandler(volunteerCollectionController.getVolunteerCollectionById),
 );
 router.post(
   "/volunteer_collection",
+  requireAuth,
+  requireRole("admin"),
   asyncHandler(volunteerCollectionController.createVolunteerCollection),
 );
 router.put(
   "/volunteer_collection/:volunteer_collection_id",
+  requireAuth,
+  requireRole("admin"),
   asyncHandler(volunteerCollectionController.updateVolunteerCollection),
 );
 router.delete(
   "/volunteer_collection/:volunteer_collection_id",
+  requireAuth,
+  requireRole("admin"),
   asyncHandler(volunteerCollectionController.deleteVolunteerCollection),
 );
 
 // Session routes
 
-router.get("/sessions", asyncHandler(controller.getAllSessions));
-router.get("/sessions/:token_id", asyncHandler(controller.getSessionById));
-router.post("/sessions", asyncHandler(controller.createSession));
-router.delete("/sessions/:token_id", asyncHandler(controller.deleteSession));
+router.get("/sessions", requireAuth, asyncHandler(controller.getAllSessions));
+router.get(
+  "/sessions/:token_id",
+  requireAuth,
+  asyncHandler(controller.getSessionById),
+);
+router.post("/sessions", requireAuth, asyncHandler(controller.createSession));
+router.delete(
+  "/sessions/:token_id",
+  requireAuth,
+  asyncHandler(controller.deleteSession),
+);
 
 export default router;

@@ -90,14 +90,12 @@ export class AuthenticationController {
         expiresAt,
       });
 
-      res
-        .cookie("refresh_token", refreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "prod",
-          sameSite: "lax",
-          expires: expiresAt,
-        })
-        .json({ accessToken, user: toJSONSafe(user) });
+      res.cookie("refresh_token", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "prod",
+        sameSite: "lax",
+        expires: expiresAt,
+      });
 
       sendSuccess(res, { accessToken, user: toJSONSafe(user) }, 200);
     } catch (err) {

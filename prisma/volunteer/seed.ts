@@ -15,6 +15,18 @@ async function seedVolunteers(skipCleanup = false) {
     console.log("⚠️ Skipping cleanup (SKIP_CLEANUP=true)");
   }
 
+  // Always create this test admin user for integration tests
+  await prisma.volunteer.upsert({
+    where: { volunteer_email: "admin@example.com" },
+    update: {},
+    create: {
+      volunteer_name: "Admin User",
+      volunteer_email: "admin@example.com",
+      password: await argon2.hash("password123"), // Use the same hash logic
+      role: "admin",
+    },
+  });
+
   const fakeVolunteers = await Promise.all(
     Array.from({ length: NUM_VOLUNTEERS }).map(async () => ({
       volunteer_name: faker.person.fullName(),
