@@ -58,7 +58,7 @@ describe("Collection API CRUD", () => {
     it("should create a collection", async () => {
       const randomPlace = faker.location.city();
       const res = await createCollection({ collection_place: randomPlace });
-      expect(res.status).toBe(201);
+      expect(res.status).toBe(200);
       expect(res.body.status).toBe("success");
       expect(res.body.data).toHaveProperty("collection_id");
       expect(res.body.data.collection_place).toBe(randomPlace);

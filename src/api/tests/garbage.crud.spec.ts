@@ -69,7 +69,7 @@ describe("Garbage API CRUD", () => {
       const randomCollectionId = faker.helpers.arrayElement(collectionIds);
 
       const res = await createGarbage({ collection_id: randomCollectionId });
-      expect(res.status).toBe(201);
+      expect(res.status).toBe(200);
       expect(res.body.status).toBe("success");
       expect(res.body.data).toHaveProperty("garbage_id");
       expect(res.body.data.collection_id).toBe(randomCollectionId);
@@ -174,8 +174,12 @@ describe("Garbage API CRUD", () => {
       const res = await request(app)
         .delete(`/api/garbage/${createdGarbage.garbage_id}`)
         .set("Authorization", `Bearer ${adminToken}`);
-      expect(res.status).toBe(204);
-      expect(res.body).toEqual({});
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        data: null,
+        error: null,
+        status: "success",
+      });
     });
 
     it("should 404 on delete for non-existent garbage", async () => {

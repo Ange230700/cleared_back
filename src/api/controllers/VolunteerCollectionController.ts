@@ -73,7 +73,7 @@ export class VolunteerCollectionController {
         sendError(res, "Volunteer collection already exists", 409);
         return;
       }
-      sendSuccess(res, toVolunteerCollectionDTO(created), 201);
+      sendSuccess(res, toVolunteerCollectionDTO(created), 200);
     } catch (err) {
       next(err);
     }
@@ -128,7 +128,7 @@ export class VolunteerCollectionController {
         sendError(res, "Not found", 404);
         return;
       }
-      sendSuccess(res, null, 204);
+      sendSuccess(res, null, 200);
     } catch (err) {
       next(err);
     }

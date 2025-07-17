@@ -62,7 +62,7 @@ describe("VolunteerCollection API CRUD", () => {
         volunteer_id: randomVolunteer,
         collection_id: randomCollection,
       });
-      expect(res.status).toBe(201);
+      expect(res.status).toBe(200);
       expect(res.body.data).toHaveProperty("volunteer_collection_id");
       expect(res.body.data.volunteer_id).toBe(randomVolunteer);
       expect(res.body.data.collection_id).toBe(randomCollection);
@@ -159,7 +159,7 @@ describe("VolunteerCollection API CRUD", () => {
           `/api/volunteer_collection/${createdVolunteerCollection.volunteer_collection_id}`,
         )
         .set("Authorization", `Bearer ${adminToken}`);
-      expect(res.status).toBe(204);
+      expect(res.status).toBe(200);
     });
 
     it("should 404 on delete for non-existent volunteer_collection", async () => {

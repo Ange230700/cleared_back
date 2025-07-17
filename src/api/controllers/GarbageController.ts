@@ -74,7 +74,7 @@ export class GarbageController {
         sendError(res, "Garbage already exists", 409);
         return;
       }
-      sendSuccess(res, toGarbageDTO(created), 201);
+      sendSuccess(res, toGarbageDTO(created), 200);
     } catch (err) {
       next(err);
     }
@@ -131,7 +131,7 @@ export class GarbageController {
         sendError(res, "Not found", 404);
         return;
       }
-      sendSuccess(res, null, 204);
+      sendSuccess(res, null, 200);
     } catch (err) {
       next(err);
     }

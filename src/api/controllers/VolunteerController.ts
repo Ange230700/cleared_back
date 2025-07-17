@@ -75,7 +75,7 @@ export class VolunteerController {
         sendError(res, "Volunteer already exists", 409);
         return;
       }
-      sendSuccess(res, toVolunteerDTO(created), 201);
+      sendSuccess(res, toVolunteerDTO(created), 200);
     } catch (err) {
       next(err);
     }
@@ -134,7 +134,7 @@ export class VolunteerController {
         sendError(res, "Not found", 404);
         return;
       }
-      sendSuccess(res, null, 204);
+      sendSuccess(res, null, 200);
     } catch (err) {
       next(err);
     }

@@ -69,7 +69,7 @@ export class SessionController {
         issued_at: new Date(issued_at),
         expires_at: new Date(expires_at),
       });
-      sendSuccess(res, toSessionDTO(session), 201);
+      sendSuccess(res, toSessionDTO(session), 200);
     } catch (err) {
       next(err);
     }
@@ -91,7 +91,7 @@ export class SessionController {
         sendError(res, "Session not found", 404);
         return;
       }
-      sendSuccess(res, null, 204);
+      sendSuccess(res, null, 200);
     } catch (err) {
       next(err);
     }

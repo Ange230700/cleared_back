@@ -78,7 +78,7 @@ export class CollectionController {
         sendError(res, "Collection already exists", 409);
         return;
       }
-      sendSuccess(res, toCollectionDTO(created), 201);
+      sendSuccess(res, toCollectionDTO(created), 200);
     } catch (err) {
       next(err);
     }

@@ -25,7 +25,7 @@ describe("Authentication API", () => {
     it("should register a new volunteer", async () => {
       const res = await request(app).post(`${ENDPOINT}/register`).send(user);
 
-      expect(res.status).toBe(201);
+      expect(res.status).toBe(200);
       expect(res.body.status).toBe("success");
       expect(res.body.error).toBeNull();
     });
@@ -103,7 +103,7 @@ describe("Authentication API", () => {
         .post(`${ENDPOINT}/logout`)
         .set("Cookie", refreshTokenCookie);
 
-      expect(res.status).toBe(204);
+      expect(res.status).toBe(200);
 
       // Check Set-Cookie: refresh_token=; ... (cleared)
       const cookies = res.headers["set-cookie"];
@@ -124,7 +124,7 @@ describe("Authentication API", () => {
 
     it("should not logout if no cookie present (graceful)", async () => {
       const res = await request(app).post(`${ENDPOINT}/logout`);
-      expect(res.status).toBe(204);
+      expect(res.status).toBe(200);
     });
   });
 });

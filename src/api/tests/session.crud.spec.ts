@@ -72,7 +72,7 @@ describe("Session API CRUD", () => {
         .post("/api/sessions")
         .set("Authorization", `Bearer ${adminToken}`)
         .send(sessionData)
-        .expect(201);
+        .expect(200);
 
       expect(res.body.status).toBe("success");
       expect(res.body.data).toMatchObject({
@@ -140,9 +140,13 @@ describe("Session API CRUD", () => {
       const res = await request(app)
         .delete(`/api/sessions/${createdSession.token_id}`)
         .set("Authorization", `Bearer ${adminToken}`)
-        .expect(204);
+        .expect(200);
 
-      expect(res.body).toEqual({});
+      expect(res.body).toEqual({
+        data: null,
+        error: null,
+        status: "success",
+      });
     });
 
     it("should 404 if deleting already deleted/non-existing session", async () => {

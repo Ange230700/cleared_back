@@ -40,7 +40,7 @@ export class AuthenticationController {
         sendError(res, "User already exists", 409);
         return;
       }
-      sendSuccess(res, toVolunteerDTO(registered), 201);
+      sendSuccess(res, toVolunteerDTO(registered), 200);
     } catch (err) {
       next(err);
     }
@@ -151,7 +151,7 @@ export class AuthenticationController {
     const refreshToken = req.cookies.refresh_token;
     // ADD THIS LOG
     if (!refreshToken) {
-      sendSuccess(res, null, 204);
+      sendSuccess(res, null, 200);
       return;
     }
 
@@ -163,7 +163,7 @@ export class AuthenticationController {
         sameSite: "lax",
         path: "/",
       });
-      sendSuccess(res, null, 204);
+      sendSuccess(res, null, 200);
     } catch (err) {
       next(err);
     }
