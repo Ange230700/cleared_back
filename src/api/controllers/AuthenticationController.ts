@@ -95,6 +95,7 @@ export class AuthenticationController {
         secure: process.env.NODE_ENV === "prod",
         sameSite: "lax",
         expires: expiresAt,
+        path: "/",
       });
 
       sendSuccess(res, { accessToken, user: toVolunteerDTO(user) }, 200);
@@ -156,7 +157,12 @@ export class AuthenticationController {
 
     try {
       await this.logoutUseCase.execute(refreshToken);
-      res.clearCookie("refresh_token");
+      res.clearCookie("refresh_token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "prod",
+        sameSite: "lax",
+        path: "/",
+      });
       sendSuccess(res, null, 204);
     } catch (err) {
       next(err);

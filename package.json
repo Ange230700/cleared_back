@@ -8,7 +8,7 @@
     "test": "cross-env NODE_ENV=test jest --detectOpenHandles",
     "clean": "rm -rf node_modules package-lock.json dist",
     "postinstall": "npm run prisma:generate",
-    "prebuild": "npm run prisma:generate",
+    "prebuild": "npm run clean && npm i",
     "build": "tsc",
     "postbuild": "npm run prisma:migrate:deploy && npm run db:cleanup && npm run prisma:db:seed",
     "dev": "tsx watch src/api/index.ts",
