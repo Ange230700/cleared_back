@@ -7,8 +7,8 @@ import { GetVolunteerById } from "~/src/application/useCases/volunteer/GetVolunt
 import { CreateVolunteer } from "~/src/application/useCases/volunteer/CreateVolunteer";
 import { UpdateVolunteer } from "~/src/application/useCases/volunteer/UpdateVolunteer";
 import { DeleteVolunteer } from "~/src/application/useCases/volunteer/DeleteVolunteer";
-import { toJSONSafe } from "~/src/utils/bigint-to-number";
 import { sendSuccess, sendError } from "~/src/api/helpers/sendResponse";
+import { toVolunteerDTO } from "~/src/api/dto";
 
 export class VolunteerController {
   private readonly repo = new VolunteerRepository();
@@ -25,7 +25,8 @@ export class VolunteerController {
   ) => {
     try {
       const items = await this.getAllUseCase.execute();
-      sendSuccess(res, toJSONSafe(items), 200);
+      const dtos = items.map(toVolunteerDTO);
+      sendSuccess(res, dtos, 200);
     } catch (err) {
       next(err);
     }
@@ -47,7 +48,7 @@ export class VolunteerController {
         sendError(res, "Not found", 404);
         return;
       }
-      sendSuccess(res, toJSONSafe(item), 200);
+      sendSuccess(res, toVolunteerDTO(item), 200);
     } catch (err) {
       next(err);
     }
@@ -74,7 +75,7 @@ export class VolunteerController {
         sendError(res, "Volunteer already exists", 409);
         return;
       }
-      sendSuccess(res, toJSONSafe(created), 201);
+      sendSuccess(res, toVolunteerDTO(created), 201);
     } catch (err) {
       next(err);
     }
@@ -111,7 +112,7 @@ export class VolunteerController {
         sendError(res, "Not found", 404);
         return;
       }
-      sendSuccess(res, toJSONSafe(updated), 200);
+      sendSuccess(res, toVolunteerDTO(updated), 200);
     } catch (err) {
       next(err);
     }

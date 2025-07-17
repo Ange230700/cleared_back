@@ -7,8 +7,8 @@ import { GetVolunteerCollectionById } from "~/src/application/useCases/volunteer
 import { CreateVolunteerCollection } from "~/src/application/useCases/volunteercollection/CreateVolunteerCollection";
 import { UpdateVolunteerCollection } from "~/src/application/useCases/volunteercollection/UpdateVolunteerCollection";
 import { DeleteVolunteerCollection } from "~/src/application/useCases/volunteercollection/DeleteVolunteerCollection";
-import { toJSONSafe } from "~/src/utils/bigint-to-number";
 import { sendSuccess, sendError } from "~/src/api/helpers/sendResponse";
+import { toVolunteerCollectionDTO } from "~/src/api/dto";
 
 export class VolunteerCollectionController {
   private readonly repo = new VolunteerCollectionRepository();
@@ -25,7 +25,8 @@ export class VolunteerCollectionController {
   ) => {
     try {
       const items = await this.getAllUseCase.execute();
-      sendSuccess(res, toJSONSafe(items), 200);
+      const dtos = items.map(toVolunteerCollectionDTO);
+      sendSuccess(res, dtos, 200);
     } catch (err) {
       next(err);
     }
@@ -47,7 +48,7 @@ export class VolunteerCollectionController {
         sendError(res, "Not found", 404);
         return;
       }
-      sendSuccess(res, toJSONSafe(item), 200);
+      sendSuccess(res, toVolunteerCollectionDTO(item), 200);
     } catch (err) {
       next(err);
     }
@@ -72,7 +73,7 @@ export class VolunteerCollectionController {
         sendError(res, "Volunteer collection already exists", 409);
         return;
       }
-      sendSuccess(res, toJSONSafe(created), 201);
+      sendSuccess(res, toVolunteerCollectionDTO(created), 201);
     } catch (err) {
       next(err);
     }
@@ -105,7 +106,7 @@ export class VolunteerCollectionController {
         sendError(res, "Not found", 404);
         return;
       }
-      sendSuccess(res, toJSONSafe(updated), 200);
+      sendSuccess(res, toVolunteerCollectionDTO(updated), 200);
     } catch (err) {
       next(err);
     }

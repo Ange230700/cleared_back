@@ -7,8 +7,8 @@ import { CreateCollection } from "~/src/application/useCases/collection/CreateCo
 import { UpdateCollection } from "~/src/application/useCases/collection/UpdateCollection";
 import { DeleteCollection } from "~/src/application/useCases/collection/DeleteCollection";
 import { CollectionRepository } from "~/src/infrastructure/repositories/CollectionRepository";
-import { toJSONSafe } from "~/src/utils/bigint-to-number";
 import { sendSuccess, sendError } from "~/src/api/helpers/sendResponse";
+import { toCollectionDTO } from "~/src/api/dto";
 
 export class CollectionController {
   private readonly repo = new CollectionRepository();
@@ -25,7 +25,8 @@ export class CollectionController {
   ) => {
     try {
       const collections = await this.getAllCollectionsUseCase.execute();
-      sendSuccess(res, toJSONSafe(collections), 200);
+      const dtos = collections.map(toCollectionDTO);
+      sendSuccess(res, dtos, 200);
     } catch (err) {
       next(err);
     }
@@ -48,7 +49,7 @@ export class CollectionController {
         sendError(res, "Collection not found", 404);
         return;
       }
-      sendSuccess(res, toJSONSafe(collection), 200);
+      sendSuccess(res, toCollectionDTO(collection), 200);
     } catch (err) {
       next(err);
     }
@@ -77,7 +78,7 @@ export class CollectionController {
         sendError(res, "Collection already exists", 409);
         return;
       }
-      sendSuccess(res, toJSONSafe(created), 201);
+      sendSuccess(res, toCollectionDTO(created), 201);
     } catch (err) {
       next(err);
     }
@@ -116,7 +117,7 @@ export class CollectionController {
         sendError(res, "Collection not found", 404);
         return;
       }
-      sendSuccess(res, toJSONSafe(updated), 200);
+      sendSuccess(res, toCollectionDTO(updated), 200);
     } catch (err) {
       next(err);
     }

@@ -6,8 +6,8 @@ import { GetAllSessions } from "~/src/application/useCases/session/GetAllSession
 import { GetSessionById } from "~/src/application/useCases/session/GetSessionById";
 import { CreateSession } from "~/src/application/useCases/session/CreateSession";
 import { DeleteSession } from "~/src/application/useCases/session/DeleteSession";
-import { toJSONSafe } from "~/src/utils/bigint-to-number";
 import { sendSuccess, sendError } from "~/src/api/helpers/sendResponse";
+import { toSessionDTO } from "~/src/api/dto";
 
 export class SessionController {
   private readonly repo = new SessionRepository();
@@ -23,7 +23,8 @@ export class SessionController {
   ) => {
     try {
       const sessions = await this.getAllUseCase.execute();
-      sendSuccess(res, toJSONSafe(sessions), 200);
+      const dtos = sessions.map(toSessionDTO);
+      sendSuccess(res, dtos, 200);
     } catch (err) {
       next(err);
     }
@@ -45,7 +46,7 @@ export class SessionController {
         sendError(res, "Session not found", 404);
         return;
       }
-      sendSuccess(res, toJSONSafe(session), 200);
+      sendSuccess(res, toSessionDTO(session), 200);
     } catch (err) {
       next(err);
     }
@@ -68,7 +69,7 @@ export class SessionController {
         issued_at: new Date(issued_at),
         expires_at: new Date(expires_at),
       });
-      sendSuccess(res, toJSONSafe(session), 201);
+      sendSuccess(res, toSessionDTO(session), 201);
     } catch (err) {
       next(err);
     }

@@ -7,8 +7,8 @@ import { GetGarbageById } from "~/src/application/useCases/garbage/GetGarbageByI
 import { CreateGarbage } from "~/src/application/useCases/garbage/CreateGarbage";
 import { UpdateGarbage } from "~/src/application/useCases/garbage/UpdateGarbage";
 import { DeleteGarbage } from "~/src/application/useCases/garbage/DeleteGarbage";
-import { toJSONSafe } from "~/src/utils/bigint-to-number";
 import { sendSuccess, sendError } from "~/src/api/helpers/sendResponse";
+import { toGarbageDTO } from "~/src/api/dto";
 
 export class GarbageController {
   private readonly repo = new GarbageRepository();
@@ -25,7 +25,8 @@ export class GarbageController {
   ) => {
     try {
       const items = await this.getAllUseCase.execute();
-      sendSuccess(res, toJSONSafe(items), 200);
+      const dtos = items.map(toGarbageDTO);
+      sendSuccess(res, dtos, 200);
     } catch (err) {
       next(err);
     }
@@ -47,7 +48,7 @@ export class GarbageController {
         sendError(res, "Not found", 404);
         return;
       }
-      sendSuccess(res, toJSONSafe(item), 200);
+      sendSuccess(res, toGarbageDTO(item), 200);
     } catch (err) {
       next(err);
     }
@@ -73,7 +74,7 @@ export class GarbageController {
         sendError(res, "Garbage already exists", 409);
         return;
       }
-      sendSuccess(res, toJSONSafe(created), 201);
+      sendSuccess(res, toGarbageDTO(created), 201);
     } catch (err) {
       next(err);
     }
@@ -108,7 +109,7 @@ export class GarbageController {
         sendError(res, "Not found", 404);
         return;
       }
-      sendSuccess(res, toJSONSafe(updated), 200);
+      sendSuccess(res, toGarbageDTO(updated), 200);
     } catch (err) {
       next(err);
     }

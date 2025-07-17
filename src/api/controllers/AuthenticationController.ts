@@ -6,10 +6,10 @@ import { Register } from "~/src/application/useCases/authentication/Register";
 import { Login } from "~/src/application/useCases/authentication/Login";
 import { Refresh } from "~/src/application/useCases/authentication/Refresh";
 import { Logout } from "~/src/application/useCases/authentication/Logout";
-import { toJSONSafe } from "~/src/utils/bigint-to-number";
 import { signAccessToken } from "~/src/utils/jwt";
 import crypto from "crypto";
 import { sendSuccess, sendError } from "~/src/api/helpers/sendResponse";
+import { toVolunteerDTO } from "~/src/api/dto";
 
 export class AuthenticationController {
   private readonly repo = new AuthenticationRepository();
@@ -40,7 +40,7 @@ export class AuthenticationController {
         sendError(res, "User already exists", 409);
         return;
       }
-      sendSuccess(res, toJSONSafe(registered), 201);
+      sendSuccess(res, toVolunteerDTO(registered), 201);
     } catch (err) {
       next(err);
     }
@@ -97,7 +97,7 @@ export class AuthenticationController {
         expires: expiresAt,
       });
 
-      sendSuccess(res, { accessToken, user: toJSONSafe(user) }, 200);
+      sendSuccess(res, { accessToken, user: toVolunteerDTO(user) }, 200);
     } catch (err) {
       next(err);
     }
@@ -133,7 +133,7 @@ export class AuthenticationController {
         expiresIn,
       );
 
-      sendSuccess(res, { accessToken, user: toJSONSafe(user) }, 200);
+      sendSuccess(res, { accessToken, user: toVolunteerDTO(user) }, 200);
     } catch (err) {
       // If your use case can throw for verification/DB problems, treat as 401
       sendError(res, "Invalid refresh token", 401);
