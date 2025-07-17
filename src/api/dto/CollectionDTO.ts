@@ -1,6 +1,7 @@
 // src/api/dto/CollectionDTO.ts
 
 import { Collection } from "~/src/core/entities/Collection";
+import { accumulateGarbage } from "~/src/api/helpers/accumulateGarbage";
 
 export interface CollectionDTO {
   collection_id: number;
@@ -24,9 +25,11 @@ export function toCollectionDTO(entity: Collection): CollectionDTO {
       volunteer_name: v.volunteer_name,
       volunteer_email: v.volunteer_email,
     })),
-    garbages: entity.garbages?.map((g) => ({
-      garbage_type: g.garbage_type,
-      quantity_kg: g.quantity_kg,
-    })),
+    garbages: accumulateGarbage(
+      entity.garbages?.map((g) => ({
+        garbage_type: g.garbage_type,
+        quantity_kg: g.quantity_kg,
+      })) ?? [],
+    ),
   };
 }
