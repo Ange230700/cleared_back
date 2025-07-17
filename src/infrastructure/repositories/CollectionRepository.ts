@@ -4,16 +4,54 @@ import { Collection } from "~/src/core/entities/Collection";
 import { ICollectionRepository } from "~/src/application/interfaces/ICollectionRepository";
 import prisma from "~/prisma/lib/client";
 import { Prisma } from "@prisma/client";
+import { Garbage } from "~/src/core/entities/Garbage";
+import { Volunteer } from "~/src/core/entities/Volunteer";
 
 export class CollectionRepository implements ICollectionRepository {
   async getAllCollections(): Promise<Collection[]> {
-    const collections = await prisma.collection.findMany();
+    const collections = await prisma.collection.findMany({
+      include: {
+        // Include all related garbage for this collection
+        garbage: true,
+        // Include all related volunteer_collection, then fetch volunteers through it
+        volunteer_collection: {
+          include: {
+            volunteer: true,
+          },
+        },
+      },
+    });
+
+    // Map to your entity
     return collections.map(
-      (collection) =>
+      (c) =>
         new Collection(
-          Number(collection.collection_id),
-          collection.collection_date,
-          collection.collection_place,
+          Number(c.collection_id),
+          c.collection_date,
+          c.collection_place,
+          // map garbages (entities)
+          c.garbage.map(
+            (g) =>
+              new Garbage(
+                Number(g.garbage_id),
+                g.collection_id ? Number(g.collection_id) : null,
+                g.garbage_type,
+                g.quantity_kg,
+              ),
+          ),
+          // map volunteers (entities)
+          c.volunteer_collection
+            .filter((vc) => !!vc.volunteer)
+            .map(
+              (vc) =>
+                new Volunteer(
+                  Number(vc.volunteer!.volunteer_id),
+                  vc.volunteer!.volunteer_name,
+                  vc.volunteer!.volunteer_email,
+                  vc.volunteer!.password,
+                  vc.volunteer!.role,
+                ),
+            ),
         ),
     );
   }
