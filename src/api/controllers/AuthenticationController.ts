@@ -93,7 +93,7 @@ export class AuthenticationController {
       res.cookie("refresh_token", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "prod",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "prod" ? "none" : "lax",
         expires: expiresAt,
         path: "/",
       });
