@@ -160,7 +160,7 @@ export class AuthenticationController {
       res.clearCookie("refresh_token", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "prod",
-        sameSite: "lax",
+        sameSite: process.env.NODE_ENV === "prod" ? "none" : "lax",
         path: "/",
       });
       sendSuccess(res, null, 200);
