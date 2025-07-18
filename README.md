@@ -1,10 +1,10 @@
 <!-- README.md -->
 
-# cleared_back
+# Vacuum API
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
 
-A robust, modular backend API for managing environmental cleanup events, volunteer participation, and waste collection data. Designed for scalability, extensibility, and security, **cleared_back** provides RESTful endpoints for user authentication, collection events, garbage tracking, and volunteer coordination. The project uses modern patterns (domain-driven, layered architecture), rigorous testing, and developer-friendly tooling.
+A robust, modular backend API for managing environmental cleanup events, volunteer participation, and waste collection data. Designed for scalability, extensibility, and security, **Vacuum API** provides RESTful endpoints for user authentication, collection events, garbage tracking, and volunteer coordination. The project uses modern patterns (domain-driven, layered architecture), rigorous testing, and developer-friendly tooling.
 
 ## Table of Contents
 
@@ -58,7 +58,7 @@ API documentation and interactive demo available at:
 ### Installation
 
 ```bash
-git clone https://github.com/username/cleared_back.git
+git clone https://github.com/Ange230700/cleared_back.git
 cd cleared_back
 npm install
 ```
