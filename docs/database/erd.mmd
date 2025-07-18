@@ -1,0 +1,43 @@
+%% docs\database\erd.mmd
+
+erDiagram
+  collection {
+    BIGINT collection_id PK
+    DATE collection_date
+    STRING collection_place
+  }
+  garbage {
+    BIGINT garbage_id PK
+    BIGINT collection_id FK
+    STRING garbage_type
+    FLOAT quantity_kg
+  }
+  volunteer {
+    BIGINT volunteer_id PK
+    STRING volunteer_name
+    STRING volunteer_email
+    STRING password
+    volunteer_role role
+  }
+  volunteer_collection {
+    BIGINT volunteer_collection_id PK
+    BIGINT volunteer_id FK
+    BIGINT collection_id FK
+  }
+  session {
+    STRING token_id PK
+    BIGINT volunteer_id FK
+    DATETIME issued_at
+    DATETIME expires_at
+  }
+
+  %% RELATIONSHIPS
+
+  collection ||--o{ garbage : "garbage"
+  collection ||--o{ volunteer_collection : "volunteer_collection"
+  volunteer ||--o{ volunteer_collection : "volunteer_collection"
+  volunteer ||--o{ session : "session"
+  volunteer_collection }o--|| collection : "collection"
+  volunteer_collection }o--|| volunteer : "volunteer"
+  garbage }o--|| collection : "collection"
+  session }o--|| volunteer : "volunteer"
