@@ -4,11 +4,6 @@ import prisma from "~/prisma/lib/client";
 import deleteSafely from "~/prisma/helpers/deleteSafely";
 
 async function cleanUp() {
-  // 🚨 PRODUCTION GUARD 🚨
-  if (process.env.NODE_ENV === "prod") {
-    throw new Error("Do not run cleanup in prod!");
-  }
-
   console.log("🧹 Cleaning up…");
   await Promise.all([
     deleteSafely(
